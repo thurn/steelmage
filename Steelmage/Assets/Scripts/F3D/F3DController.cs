@@ -3,470 +3,385 @@ using System.Collections;
 using System;
 
 // Weapon types
-public enum F3DEffectType
-{
-    Vulcan,
-    SoloGun,
-    Sniper,
-    ShotGun,
-    Seeker,
-    RailGun,
-    PlasmaGun,
-    PlasmaBeam,
-    PlasmaBeamHeavy,
-    LightningGun,
-    FlameRed,
-    LaserImpulse
+public enum F3DEffectType {
+  Vulcan,
+  SoloGun,
+  Sniper,
+  ShotGun,
+  Seeker,
+  RailGun,
+  PlasmaGun,
+  PlasmaBeam,
+  PlasmaBeamHeavy,
+  LightningGun,
+  FlameRed,
+  LaserImpulse
 }
 
-public class F3DController : MonoBehaviour
-{
-    // Singleton Instance
-    public static F3DController Instance { get; private set; }
+public class F3DController : MonoBehaviour {
+  // Singleton Instance
+  public static F3DController Instance { get; private set; }
 
-    // GUI captions
-    string[] fxTypeName = { "Vulcan", "Sologun", "Sniper", "Shotgun", "Seeker", "Railgun", "Plasmagun", "Plasma beam", "Heavy plasma beam", "Lightning gun", "Flamethrower", "Pulse laser" };
+  // GUI captions
+  string[] fxTypeName = { "Vulcan", "Sologun", "Sniper", "Shotgun", "Seeker", "Railgun", "Plasmagun", "Plasma beam", "Heavy plasma beam", "Lightning gun", "Flamethrower", "Pulse laser" };
 
-    // Current firing socket
-    int curSocket;          
-    // Timer reference                
-    int timerID = -1;
+  // Current firing socket
+  int curSocket;
+  // Timer reference                
+  int timerID = -1;
+  private Transform _effectOrigin;
 
-    [Header("Turret setup")]
-    public Transform[] TurretSocket;            // Sockets reference
-    public ParticleSystem[] ShellParticles;     // Bullet shells particle system
-   
-    public F3DEffectType DefaultFXType;             // Default starting weapon type
-    
-    [Header("Vulcan")]    
-    public Transform vulcanProjectile;          // Projectile prefab
-    public Transform vulcanMuzzle;              // Muzzle flash prefab  
-    public Transform vulcanImpact;              // Impact prefab
+  [Header("Turret setup")]
+  public Transform[] TurretSocket;            // Sockets reference
+  public ParticleSystem[] ShellParticles;     // Bullet shells particle system
 
-    [Header("Solo gun")]
-    public Transform soloGunProjectile;
-    public Transform soloGunMuzzle;
-    public Transform soloGunImpact;
+  public F3DEffectType DefaultFXType;             // Default starting weapon type
 
-    [Header("Sniper")]
-    public Transform sniperBeam;
-    public Transform sniperMuzzle;
-    public Transform sniperImpact;
+  [Header("Vulcan")]
+  public Transform vulcanProjectile;          // Projectile prefab
+  public Transform vulcanMuzzle;              // Muzzle flash prefab  
+  public Transform vulcanImpact;              // Impact prefab
 
-    [Header("Shotgun")]
-    public Transform shotGunProjectile;
-    public Transform shotGunMuzzle;
-    public Transform shotGunImpact;
+  [Header("Solo gun")]
+  public Transform soloGunProjectile;
+  public Transform soloGunMuzzle;
+  public Transform soloGunImpact;
 
-    [Header("Seeker")]
-    public Transform seekerProjectile;
-    public Transform seekerMuzzle;
-    public Transform seekerImpact;
+  [Header("Sniper")]
+  public Transform sniperBeam;
+  public Transform sniperMuzzle;
+  public Transform sniperImpact;
 
-    [Header("Rail gun")]
-    public Transform railgunBeam;
-    public Transform railgunMuzzle;
-    public Transform railgunImpact;
+  [Header("Shotgun")]
+  public Transform shotGunProjectile;
+  public Transform shotGunMuzzle;
+  public Transform shotGunImpact;
 
-    [Header("Plasma gun")]
-    public Transform plasmagunProjectile;
-    public Transform plasmagunMuzzle;
-    public Transform plasmagunImpact;
+  [Header("Seeker")]
+  public Transform seekerProjectile;
+  public Transform seekerMuzzle;
+  public Transform seekerImpact;
 
-    [Header("Plasma beam")]
-    public Transform plasmaBeam;
+  [Header("Rail gun")]
+  public Transform railgunBeam;
+  public Transform railgunMuzzle;
+  public Transform railgunImpact;
 
-    [Header("Plasma beam heavy")]
-    public Transform plasmaBeamHeavy;
+  [Header("Plasma gun")]
+  public Transform plasmagunProjectile;
+  public Transform plasmagunMuzzle;
+  public Transform plasmagunImpact;
 
-    [Header("Lightning gun")]
-    public Transform lightningGunBeam;
+  [Header("Plasma beam")]
+  public Transform plasmaBeam;
 
-    [Header("Flame")]
-    public Transform flameRed;
+  [Header("Plasma beam heavy")]
+  public Transform plasmaBeamHeavy;
 
-    [Header("Laser impulse")]
-    public Transform laserImpulseProjectile;
-    public Transform laserImpulseMuzzle;
-    public Transform laserImpulseImpact;
+  [Header("Lightning gun")]
+  public Transform lightningGunBeam;
 
-    void Awake()
-    {
-        // Initialize singleton  
-        Instance = this;
+  [Header("Flame")]
+  public Transform flameRed;
 
-        // Initialize bullet shells particles
-        for (int i = 0; i < ShellParticles.Length; i++)
-        {
-            ShellParticles[i].enableEmission = false;
-            ShellParticles[i].gameObject.SetActive(true);
-        }
+  [Header("Laser impulse")]
+  public Transform laserImpulseProjectile;
+  public Transform laserImpulseMuzzle;
+  public Transform laserImpulseImpact;
+
+  void Awake() {
+    // Initialize singleton  
+    Instance = this;
+
+    // Initialize bullet shells particles
+    for (int i = 0; i < ShellParticles.Length; i++) {
+      ShellParticles[i].enableEmission = false;
+      ShellParticles[i].gameObject.SetActive(true);
     }
+  }
 
-    // Display GUI
-    void OnGUI()
-    {
-        GUIStyle caption = new GUIStyle(GUI.skin.label);
-        caption.fontSize = 25;
-        caption.fontStyle = FontStyle.Bold;
-        caption.wordWrap = false;
+  void Update() {
+    // Switch weapon types using keyboard keys
+    if (Input.GetKeyDown(KeyCode.RightArrow))
+      NextWeapon();
+    else if (Input.GetKeyDown(KeyCode.LeftArrow))
+      PrevWeapon();
+  }
 
-        GUIStyle tooltip = new GUIStyle(GUI.skin.label);
-        tooltip.fontSize = 11;
-        tooltip.wordWrap = false;
-
-        GUILayout.BeginArea(new Rect(Screen.width / 2 - 150, Screen.height - 150, 300, 120));
-
-        GUILayout.BeginVertical();
-
-        GUILayout.FlexibleSpace();
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        GUILayout.Label(fxTypeName[(int)DefaultFXType], caption);
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-
-        GUILayout.FlexibleSpace();
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        GUILayout.Label("Press Left / Right arrow keys to switch", tooltip);
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-            
-        GUILayout.FlexibleSpace();
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-
-        if (GUILayout.Button("Previous", GUILayout.Width(90), GUILayout.Height(30)))
-            PrevWeapon();
-
-        GUILayout.FlexibleSpace();
-
-        if (GUILayout.Button("Next", GUILayout.Width(90), GUILayout.Height(30)))
-            NextWeapon();
-
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-        GUILayout.FlexibleSpace();
-
-        GUILayout.EndVertical();
-
-        GUILayout.EndArea();
+  // Switch to next weapon type
+  void NextWeapon() {
+    if ((int)DefaultFXType < Enum.GetNames(typeof(F3DEffectType)).Length - 1) {
+      Stop();
+      DefaultFXType++;
     }
+  }
 
-    void Update()
-    {
-        // Switch weapon types using keyboard keys
-        if (Input.GetKeyDown(KeyCode.RightArrow))        
-            NextWeapon();        
-        else if(Input.GetKeyDown(KeyCode.LeftArrow))
-            PrevWeapon();
+  // Switch to previous weapon type
+  void PrevWeapon() {
+    if (DefaultFXType > 0) {
+      Stop();
+      DefaultFXType--;
     }
+  }
 
-    // Switch to next weapon type
-    void NextWeapon()
-    {
-        if ((int)DefaultFXType < Enum.GetNames(typeof(F3DEffectType)).Length - 1)
-        {
-            Stop();
-            DefaultFXType++;
-        }        
-    }
+  // Advance to next turret socket
+  void AdvanceSocket() {
+    curSocket++;
+    if (curSocket > 3)
+      curSocket = 0;
+  }
 
-    // Switch to previous weapon type
-    void PrevWeapon()
-    {
-        if (DefaultFXType > 0)
-        {
-            Stop();
-            DefaultFXType--;
-        }
+  // Fire turret weapon
+  public void Fire(F3DEffectType effectType, Transform effectOrigin) {
+    _effectOrigin = effectOrigin;
+    switch (effectType) {
+      case F3DEffectType.Vulcan:
+        // Fire vulcan at specified rate until canceled
+        timerID = F3DTime.time.AddTimer(0.05f, Vulcan);
+        // Invoke manually before the timer ticked to avoid initial delay
+        Vulcan();
+        break;
+
+      case F3DEffectType.SoloGun:
+        timerID = F3DTime.time.AddTimer(0.2f, SoloGun);
+        SoloGun();
+        break;
+
+      case F3DEffectType.Sniper:
+        timerID = F3DTime.time.AddTimer(0.3f, Sniper);
+        Sniper();
+        break;
+
+      case F3DEffectType.ShotGun:
+        timerID = F3DTime.time.AddTimer(0.3f, ShotGun);
+        ShotGun();
+        break;
+
+      case F3DEffectType.Seeker:
+        timerID = F3DTime.time.AddTimer(0.2f, Seeker);
+        Seeker();
+        break;
+
+      case F3DEffectType.RailGun:
+        timerID = F3DTime.time.AddTimer(0.2f, RailGun);
+        RailGun();
+        break;
+
+      case F3DEffectType.PlasmaGun:
+        timerID = F3DTime.time.AddTimer(0.2f, PlasmaGun);
+        PlasmaGun();
+        break;
+
+      case F3DEffectType.PlasmaBeam:
+        // Beams has no timer requirement
+        PlasmaBeam();
+        break;
+
+      case F3DEffectType.PlasmaBeamHeavy:
+        // Beams has no timer requirement
+        PlasmaBeamHeavy();
+        break;
+
+      case F3DEffectType.LightningGun:
+        // Beams has no timer requirement
+        LightningGun();
+        break;
+
+      case F3DEffectType.FlameRed:
+        // Flames has no timer requirement
+        FlameRed();
+        break;
+
+      case F3DEffectType.LaserImpulse:
+        timerID = F3DTime.time.AddTimer(0.15f, LaserImpulse);
+        LaserImpulse();
+        break;
+
+      default:
+        break;
     }
+  }
+
+  // Stop firing 
+  public void Stop() {
+    // Remove firing timer
+    if (timerID != -1) {
+      F3DTime.time.RemoveTimer(timerID);
+      timerID = -1;
+    }
+  }
+
+  // Fire vulcan weapon
+  void Vulcan() {
+    // Get random rotation that offset spawned projectile
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+
+    // Spawn muzzle flash and projectile with the rotation offset at current socket position
+    F3DPool.instance.Spawn(vulcanMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(vulcanProjectile, _effectOrigin.position + _effectOrigin.forward, offset * _effectOrigin.rotation, null);
+
+    // Emit one bullet shell
+    ShellParticles[curSocket].Emit(1);
+
+    // Play shot sound effect
+    F3DAudioController.instance.VulcanShot(_effectOrigin.position);
 
     // Advance to next turret socket
-    void AdvanceSocket()
-    {
-        curSocket++;
-        if (curSocket > 3)
-            curSocket = 0;
-    }
+    AdvanceSocket();
+  }
 
-    // Fire turret weapon
-    public void Fire()
-    {
-        switch (DefaultFXType)
-        {
-            case F3DEffectType.Vulcan:
-                // Fire vulcan at specified rate until canceled
-                timerID = F3DTime.time.AddTimer(0.05f, Vulcan);
-                // Invoke manually before the timer ticked to avoid initial delay
-                Vulcan();
-                break;
-            
-            case F3DEffectType.SoloGun:
-                timerID = F3DTime.time.AddTimer(0.2f, SoloGun);
-                SoloGun();
-                break;
+  // Spawn vulcan weapon impact
+  public void VulcanImpact(Vector3 pos) {
+    // Spawn impact prefab at specified position
+    F3DPool.instance.Spawn(vulcanImpact, pos, Quaternion.identity, null);
+    // Play impact sound effect
+    F3DAudioController.instance.VulcanHit(pos);
+  }
 
-            case F3DEffectType.Sniper:
-                timerID = F3DTime.time.AddTimer(0.3f, Sniper);
-                Sniper();
-                break;
-           
-            case F3DEffectType.ShotGun:
-                timerID = F3DTime.time.AddTimer(0.3f, ShotGun);
-                ShotGun();
-                break;
-            
-            case F3DEffectType.Seeker:
-                timerID = F3DTime.time.AddTimer(0.2f, Seeker);
-                Seeker();
-                break;
-           
-            case F3DEffectType.RailGun:
-                timerID = F3DTime.time.AddTimer(0.2f, RailGun);
-                RailGun();
-                break;
-            
-            case F3DEffectType.PlasmaGun:
-                timerID = F3DTime.time.AddTimer(0.2f, PlasmaGun);
-                PlasmaGun();
-                break;
-           
-            case F3DEffectType.PlasmaBeam:   
-                // Beams has no timer requirement
-                PlasmaBeam();
-                break;
-            
-            case F3DEffectType.PlasmaBeamHeavy:
-                // Beams has no timer requirement
-                PlasmaBeamHeavy();
-                break;
-           
-            case F3DEffectType.LightningGun:
-                // Beams has no timer requirement
-                LightningGun();
-                break;
-            
-            case F3DEffectType.FlameRed:
-                // Flames has no timer requirement
-                FlameRed();
-                break;
-           
-            case F3DEffectType.LaserImpulse:
-                timerID = F3DTime.time.AddTimer(0.15f, LaserImpulse);
-                LaserImpulse();
-                break;
+  // Fire sologun weapon
+  void SoloGun() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-            default:
-                break;
-        }
-    }
+    F3DPool.instance.Spawn(soloGunMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(soloGunProjectile, _effectOrigin.position + _effectOrigin.forward, offset * _effectOrigin.rotation, null);
 
-    // Stop firing 
-    public void Stop()
-    {
-        // Remove firing timer
-        if (timerID != -1)
-        {
-            F3DTime.time.RemoveTimer(timerID);
-            timerID = -1;
-        }
-    }
+    F3DAudioController.instance.SoloGunShot(_effectOrigin.position);
 
-    // Fire vulcan weapon
-    void Vulcan()
-    {
-        // Get random rotation that offset spawned projectile
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    AdvanceSocket();
+  }
 
-        // Spawn muzzle flash and projectile with the rotation offset at current socket position
-        F3DPool.instance.Spawn(vulcanMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(vulcanProjectile, TurretSocket[curSocket].position + TurretSocket[curSocket].forward, offset * TurretSocket[curSocket].rotation, null);
+  // Spawn sologun weapon impact
+  public void SoloGunImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(soloGunImpact, pos, Quaternion.identity, null);
+    F3DAudioController.instance.SoloGunHit(pos);
+  }
 
-        // Emit one bullet shell
-        ShellParticles[curSocket].Emit(1);
+  // Fire sniper weapon
+  void Sniper() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-        // Play shot sound effect
-        F3DAudioController.instance.VulcanShot(TurretSocket[curSocket].position);
+    F3DPool.instance.Spawn(sniperMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(sniperBeam, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-        // Advance to next turret socket
-        AdvanceSocket();
-    }
+    F3DAudioController.instance.SniperShot(_effectOrigin.position);
 
-    // Spawn vulcan weapon impact
-    public void VulcanImpact(Vector3 pos)
-    {
-        // Spawn impact prefab at specified position
-        F3DPool.instance.Spawn(vulcanImpact, pos, Quaternion.identity, null);
-        // Play impact sound effect
-        F3DAudioController.instance.VulcanHit(pos);
-    }
+    ShellParticles[curSocket].Emit(1);
 
-    // Fire sologun weapon
-    void SoloGun()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    AdvanceSocket();
+  }
 
-        F3DPool.instance.Spawn(soloGunMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(soloGunProjectile, TurretSocket[curSocket].position + TurretSocket[curSocket].forward, offset * TurretSocket[curSocket].rotation, null);
-        
-        F3DAudioController.instance.SoloGunShot(TurretSocket[curSocket].position);
+  // Spawn sniper weapon impact
+  public void SniperImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(sniperImpact, pos, Quaternion.identity, null);
+    F3DAudioController.instance.SniperHit(pos);
+  }
 
-        AdvanceSocket();
-    }
+  // Fire shotgun weapon
+  void ShotGun() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-    // Spawn sologun weapon impact
-    public void SoloGunImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(soloGunImpact, pos, Quaternion.identity, null);
-        F3DAudioController.instance.SoloGunHit(pos);
-    }
+    F3DPool.instance.Spawn(shotGunMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(shotGunProjectile, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-    // Fire sniper weapon
-    void Sniper()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    F3DAudioController.instance.ShotGunShot(_effectOrigin.position);
+    ShellParticles[curSocket].Emit(1);
+    AdvanceSocket();
+  }
 
-        F3DPool.instance.Spawn(sniperMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(sniperBeam, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
+  // Fire seeker weapon
+  void Seeker() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-        F3DAudioController.instance.SniperShot(TurretSocket[curSocket].position);
+    F3DPool.instance.Spawn(seekerMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(seekerProjectile, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-        ShellParticles[curSocket].Emit(1);
+    F3DAudioController.instance.SeekerShot(_effectOrigin.position);
+    AdvanceSocket();
+  }
 
-        AdvanceSocket();
-    }
+  // Spawn seeker weapon impact
+  public void SeekerImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(seekerImpact, pos, Quaternion.identity, null);
+    F3DAudioController.instance.SeekerHit(pos);
+  }
 
-    // Spawn sniper weapon impact
-    public void SniperImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(sniperImpact, pos, Quaternion.identity, null);
-        F3DAudioController.instance.SniperHit(pos);
-    }
+  // Fire rail gun weapon
+  void RailGun() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-    // Fire shotgun weapon
-    void ShotGun()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    F3DPool.instance.Spawn(railgunMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(railgunBeam, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-        F3DPool.instance.Spawn(shotGunMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(shotGunProjectile, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
+    F3DAudioController.instance.RailGunShot(_effectOrigin.position);
 
-        F3DAudioController.instance.ShotGunShot(TurretSocket[curSocket].position);
-        ShellParticles[curSocket].Emit(1);
-        AdvanceSocket();
-    }  
+    ShellParticles[curSocket].Emit(1);
 
-    // Fire seeker weapon
-    void Seeker()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    AdvanceSocket();
+  }
 
-        F3DPool.instance.Spawn(seekerMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(seekerProjectile, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
+  // Spawn rail gun weapon impact
+  public void RailgunImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(railgunImpact, pos, Quaternion.identity, null);
 
-        F3DAudioController.instance.SeekerShot(TurretSocket[curSocket].position);       
-        AdvanceSocket();
-    }
+    F3DAudioController.instance.RailGunHit(pos);
+  }
 
-    // Spawn seeker weapon impact
-    public void SeekerImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(seekerImpact, pos, Quaternion.identity, null);
-        F3DAudioController.instance.SeekerHit(pos);
-    }
+  // Fire plasma gun weapon
+  void PlasmaGun() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-    // Fire rail gun weapon
-    void RailGun()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+    F3DPool.instance.Spawn(plasmagunMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(plasmagunProjectile, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-        F3DPool.instance.Spawn(railgunMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(railgunBeam, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
+    F3DAudioController.instance.PlasmaGunShot(_effectOrigin.position);
+    AdvanceSocket();
+  }
 
-        F3DAudioController.instance.RailGunShot(TurretSocket[curSocket].position);
+  // Spawn plasma gun weapon impact
+  public void PlasmaGunImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(plasmagunImpact, pos, Quaternion.identity, null);
+    F3DAudioController.instance.PlasmaGunHit(pos);
+  }
 
-        ShellParticles[curSocket].Emit(1);
+  // Fire plasma beam weapon
+  void PlasmaBeam() {
+    F3DPool.instance.Spawn(plasmaBeam, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
+    F3DPool.instance.Spawn(plasmaBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
+  }
 
-        AdvanceSocket();
-    }
+  // Fire heavy beam weapon
+  void PlasmaBeamHeavy() {
+    F3DPool.instance.Spawn(plasmaBeamHeavy, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
+    F3DPool.instance.Spawn(plasmaBeamHeavy, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
+  }
 
-    // Spawn rail gun weapon impact
-    public void RailgunImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(railgunImpact, pos, Quaternion.identity, null);
+  // Fire lightning gun weapon
+  void LightningGun() {
+    F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
+    F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
+  }
 
-        F3DAudioController.instance.RailGunHit(pos);
-    }
+  // Fire flames weapon
+  void FlameRed() {
+    F3DPool.instance.Spawn(flameRed, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
+    F3DPool.instance.Spawn(flameRed, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
+  }
 
-    // Fire plasma gun weapon
-    void PlasmaGun()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
+  // Fire laser pulse weapon
+  void LaserImpulse() {
+    Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
 
-        F3DPool.instance.Spawn(plasmagunMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(plasmagunProjectile, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
+    F3DPool.instance.Spawn(laserImpulseMuzzle, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    F3DPool.instance.Spawn(laserImpulseProjectile, _effectOrigin.position, offset * _effectOrigin.rotation, null);
 
-        F3DAudioController.instance.PlasmaGunShot(TurretSocket[curSocket].position);
-        AdvanceSocket();
-    }
+    F3DAudioController.instance.LaserImpulseShot(_effectOrigin.position);
 
-    // Spawn plasma gun weapon impact
-    public void PlasmaGunImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(plasmagunImpact, pos, Quaternion.identity, null);
-        F3DAudioController.instance.PlasmaGunHit(pos);
-    }
+    AdvanceSocket();
+  }
 
-    // Fire plasma beam weapon
-    void PlasmaBeam()
-    {
-        F3DPool.instance.Spawn(plasmaBeam, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
-        F3DPool.instance.Spawn(plasmaBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
-    }
-
-    // Fire heavy beam weapon
-    void PlasmaBeamHeavy()
-    {
-        F3DPool.instance.Spawn(plasmaBeamHeavy, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
-        F3DPool.instance.Spawn(plasmaBeamHeavy, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
-    }
-
-    // Fire lightning gun weapon
-    void LightningGun()
-    {
-        F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
-        F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
-    }
-
-    // Fire flames weapon
-    void FlameRed()
-    {
-        F3DPool.instance.Spawn(flameRed, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
-        F3DPool.instance.Spawn(flameRed, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
-    }
-
-    // Fire laser pulse weapon
-    void LaserImpulse()
-    {
-        Quaternion offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
-
-        F3DPool.instance.Spawn(laserImpulseMuzzle, TurretSocket[curSocket].position, TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-        F3DPool.instance.Spawn(laserImpulseProjectile, TurretSocket[curSocket].position, offset * TurretSocket[curSocket].rotation, null);
-
-        F3DAudioController.instance.LaserImpulseShot(TurretSocket[curSocket].position);
-
-        AdvanceSocket();
-    }
-
-    // Spawn laser pulse weapon impact
-    public void LaserImpulseImpact(Vector3 pos)
-    {
-        F3DPool.instance.Spawn(laserImpulseImpact, pos, Quaternion.identity, null);
-        F3DAudioController.instance.LaserImpulseHit(pos);
-    }
+  // Spawn laser pulse weapon impact
+  public void LaserImpulseImpact(Vector3 pos) {
+    F3DPool.instance.Spawn(laserImpulseImpact, pos, Quaternion.identity, null);
+    F3DAudioController.instance.LaserImpulseHit(pos);
+  }
 }
