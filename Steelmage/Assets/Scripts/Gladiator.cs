@@ -13,7 +13,7 @@ public class Gladiator : MonoBehaviour {
   // Update is called once per frame
   void Update() {
     if (!_isFiring && Input.GetKeyDown(KeyCode.Mouse0)) {
-      F3DController.Instance.Fire(F3DEffectType.ShotGun, GunPosition);
+      F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
       _isFiring = true;
     }
 
