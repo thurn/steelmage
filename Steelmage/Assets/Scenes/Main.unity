@@ -206,7 +206,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   LookAt: {x: -5, y: 0, z: -5}
   Distance: 8
-  Rotation: 0
+  Rotation: 180
   Tilt: 45
   Smoothing: 1
   MoveDampening: 5
@@ -2980,7 +2980,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 9be4de5e87433f24287908b6d6360f1e, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
@@ -2996,7 +2996,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a9783975ad53dd4bb675752fa589a7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GunPosition: {fileID: 657250837}
+  GunPosition: {fileID: 0}
 --- !u!1 &1781069488
 GameObject:
   m_ObjectHideFlags: 0
@@ -3802,7 +3802,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 2088705950}
-  - 95: {fileID: 2088705951}
   m_Layer: 0
   m_Name: gladiator2
   m_TagString: Untagged
@@ -3827,23 +3826,6 @@ Transform:
   - {fileID: 896239791}
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!95 &2088705951
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2088705949}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 1
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!1 &2097180061
 GameObject:
   m_ObjectHideFlags: 0

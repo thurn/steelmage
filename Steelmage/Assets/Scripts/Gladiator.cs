@@ -5,9 +5,8 @@ public class Gladiator : MonoBehaviour {
 
   private bool _isFiring;
   private Animator _animator;
-  private readonly int _shootRifleHash = Animator.StringToHash("shootRifle");
 
-  // Use this for initialization
+// Use this for initialization
   void Start() {
     _animator = GetComponent<Animator>();
   }
@@ -17,7 +16,7 @@ public class Gladiator : MonoBehaviour {
     if (!_isFiring && Input.GetKeyDown(KeyCode.Mouse0)) {
       //F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
       _isFiring = true;
-      _animator.SetTrigger(_shootRifleHash);
+      _animator.SetTrigger("shootRifle");
     }
 
     if (_isFiring && Input.GetKeyUp(KeyCode.Mouse0)) {
