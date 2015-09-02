@@ -3,25 +3,27 @@
 public class Gladiator : MonoBehaviour {
   public Transform GunPosition;
 
-  private bool _isFiring;
   private Animator _animator;
+  private bool _walking;
 
 // Use this for initialization
   void Start() {
     _animator = GetComponent<Animator>();
   }
 
+  public void FireRifle() {
+    F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
+  }
+
   // Update is called once per frame
   void Update() {
-    if (!_isFiring && Input.GetKeyDown(KeyCode.Mouse0)) {
-      //F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
-      _isFiring = true;
+    if (Input.GetKeyDown(KeyCode.Mouse0)) {
       _animator.SetTrigger("shootRifle");
     }
 
-    if (_isFiring && Input.GetKeyUp(KeyCode.Mouse0)) {
-      //F3DController.Instance.Stop();
-      _isFiring = false;
+    if (Input.GetKeyDown(KeyCode.Space)) {
+      _walking = !_walking;
+      _animator.SetBool("walking", _walking);
     }
   }
 }

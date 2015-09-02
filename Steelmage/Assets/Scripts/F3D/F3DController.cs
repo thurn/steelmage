@@ -137,7 +137,7 @@ public class F3DController : MonoBehaviour {
     switch (effectType) {
       case F3DEffectType.Vulcan:
         // Fire vulcan at specified rate until canceled
-        timerID = F3DTime.time.AddTimer(0.05f, Vulcan);
+        //timerID = F3DTime.time.AddTimer(0.05f, Vulcan);
         // Invoke manually before the timer ticked to avoid initial delay
         Vulcan();
         break;
@@ -153,7 +153,7 @@ public class F3DController : MonoBehaviour {
         break;
 
       case F3DEffectType.ShotGun:
-        timerID = F3DTime.time.AddTimer(0.3f, ShotGun);
+        //timerID = F3DTime.time.AddTimer(0.3f, ShotGun);
         ShotGun();
         break;
 
@@ -357,8 +357,8 @@ public class F3DController : MonoBehaviour {
 
   // Fire lightning gun weapon
   void LightningGun() {
-    F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[0].position, TurretSocket[0].rotation, TurretSocket[0]);
-    F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
+    F3DPool.instance.Spawn(lightningGunBeam, _effectOrigin.position, _effectOrigin.rotation, _effectOrigin);
+    //F3DPool.instance.Spawn(lightningGunBeam, TurretSocket[2].position, TurretSocket[2].rotation, TurretSocket[2]);
   }
 
   // Fire flames weapon
