@@ -15,7 +15,6 @@ public class Gladiator : MonoBehaviour {
     F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
   }
 
-  // Update is called once per frame
   void Update() {
     if (Input.GetKeyDown(KeyCode.Mouse0)) {
       _animator.SetTrigger("shootRifle");
