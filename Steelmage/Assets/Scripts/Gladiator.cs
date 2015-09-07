@@ -16,12 +16,12 @@ public class Gladiator : MonoBehaviour {
   }
 
   public void WalkLoopPoint() {
-    Debug.Log("Walk Loop Point " + _walking);
+    Debug.Log("Walk Loop Point, _walking=" + _walking);
     if (_walking) {
-      _animation.Play("guns_walk_loop", PlayMode.StopAll);
+     // _animation.Play("guns_walk_loop", PlayMode.StopAll);
     }
     else {
-      _animation.Play("guns_idle");      
+    //  _animation.Play("guns_idle");      
     }
   }
 
@@ -29,11 +29,18 @@ public class Gladiator : MonoBehaviour {
     if (Input.GetKeyDown(KeyCode.Mouse0)) {
       _animation.Play("shot_rifle", PlayMode.StopAll);
     }
-
+ 
     if (Input.GetKeyDown(KeyCode.Space)) {
       _walking = !_walking;
       if (_walking) {
-        _animation.Play("guns_walk", PlayMode.StopAll);
+        _animation["guns_walk_loop"].clip.wrapMode = WrapMode.Loop;
+        _animation.Play("guns_walk_start", PlayMode.StopAll);
+        _animation.PlayQueued("guns_walk_loop");
+      }
+      else {
+        _animation["guns_walk_loop"].clip.wrapMode = WrapMode.Once;
+        _animation.PlayQueued("guns_walk_stop");
+        _animation.PlayQueued("guns_idle");
       }
     }
   }
