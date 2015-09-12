@@ -74,7 +74,7 @@ namespace AI {
   public struct Action {
     public Card Card;
     public ActionType ActionType;
-    public System.Enum ActionMode;
+    public System.ValueType ActionChoices;
   }
 
   public class Game {
@@ -82,38 +82,9 @@ namespace AI {
   }
 
   public class CardData {
-    // When can this card add options for its owner?
-    public Dictionary<Card, PlaySpeed> PlaySpeeds = new Dictionary<Card, PlaySpeed> {
-    {Card.AridMesa, PlaySpeed.Land},
-    {Card.WoodedFoothills, PlaySpeed.Land},
-    {Card.RiftBolt, PlaySpeed.Sorcery},
-    {Card.SearingBlaze, PlaySpeed.Instant},
-    {Card.Skullcrack, PlaySpeed.Instant},
-    {Card.MonasterySwiftspear, PlaySpeed.Sorcery}
-  };
-
-    // Printed card types
-    public Dictionary<Card, List<CardType>> CardTypes = new Dictionary<Card, List<CardType>> {
-    {Card.AridMesa, new List<CardType> {CardType.Land}},
-    {Card.WoodedFoothills, new List<CardType> {CardType.Land}},
-    {Card.RiftBolt, new List<CardType> {CardType.Sorcery}},
-    {Card.SearingBlaze, new List<CardType> {CardType.Instant}},
-    {Card.Skullcrack, new List<CardType> {CardType.Instant}},
-    {Card.MonasterySwiftspear, new List<CardType> {CardType.Creature}}
-  };
-
-    // Printed mana costs, not including alternate costs
-    public Dictionary<Card, ManaValue> ManaCosts = new Dictionary<Card, ManaValue> {
-    {Card.RiftBolt, new ManaValue {RedValue = 1, GenericValue = 2}},
-    {Card.SearingBlaze, new ManaValue {RedValue = 2}},
-    {Card.Skullcrack, new ManaValue {RedValue = 1, GenericValue = 1}},
-    {Card.MonasterySwiftspear, new ManaValue {RedValue = 1}}
-  };
-
     public static void Main() {
       System.Console.WriteLine("Hello, World!");
-      var aridMesa = CardRegistry.Cards[Card.AridMesa] as AridMesaCard;
-      System.Console.WriteLine("Hello, " + aridMesa.Hello());
+      System.Console.ReadLine();
     }
   }
 
@@ -130,6 +101,12 @@ namespace AI {
 
   public abstract class AbstractCard {
     public abstract Card GetCard();
+    public abstract ManaValue GetPrintedManaCost();
+    public abstract List<CardType> GetCardTypes();
+    public abstract PlaySpeed GetPlaySpeed();
+    public abstract void PopulateActions(GameState gameState, ICollection<Action> actions);
+    public abstract void PerformAction(GameState gameState, Action action);
+    public abstract void UndoAction(GameState gameState, Action action);
   }
 
   public class AridMesaCard : AbstractCard {
@@ -137,8 +114,28 @@ namespace AI {
       return Card.AridMesa;
     }
 
-    public string Hello() {
-      return "AridMesa";
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue();
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Land };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Land;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
     }
   }
 
@@ -146,11 +143,59 @@ namespace AI {
     public override Card GetCard() {
       return Card.WoodedFoothills;
     }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue();
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Land };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Land;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
   }
 
   public class RiftBoltCard : AbstractCard {
     public override Card GetCard() {
       return Card.RiftBolt;
+    }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue { RedValue = 1, GenericValue = 2 };
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Sorcery };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Sorcery;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
     }
   }
 
@@ -158,17 +203,89 @@ namespace AI {
     public override Card GetCard() {
       return Card.SearingBlaze;
     }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue { RedValue = 2 };
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Instant };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Instant;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
   }
 
   public class SkullcrackCard : AbstractCard {
     public override Card GetCard() {
       return Card.Skullcrack;
     }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue { RedValue = 1, GenericValue = 1 };
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Instant };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Instant;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
   }
 
   public class MonasterySwiftspearCard : AbstractCard {
     public override Card GetCard() {
       return Card.MonasterySwiftspear;
+    }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue { RedValue = 1 };
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Creature };
+    }
+
+    public override PlaySpeed GetPlaySpeed() {
+      return PlaySpeed.Sorcery;
+    }
+
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void PerformAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+      throw new System.NotImplementedException();
     }
   }
 }
