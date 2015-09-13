@@ -9,6 +9,22 @@ namespace AI {
     Instant
   }
 
+  public enum Color {
+    White,
+    Blue,
+    Black,
+    Red,
+    Green
+  }
+
+  public enum BasicLandType {
+    Plains,
+    Island,
+    Swamp,
+    Mountain,
+    Forest
+  }
+
   public enum CardType {
     Instant,
     Sorcery,
@@ -54,6 +70,15 @@ namespace AI {
     OpponentEndOfTurn
   }
 
+  public enum Zone {
+    Hand,
+    Battlefield,
+    Graveyard,
+    Exile,
+    Stack,
+    Library
+  }
+
   public enum ActionType {
     PlayLand,
     CastSpell,
@@ -63,12 +88,18 @@ namespace AI {
     DeclareAsBlocker
   }
 
+  public struct CardState {
+
+  }
+
   public struct GameState {
     public Turn Turn;
     public GameStatus GameStatus;
     public List<Card> Hand;
     public ManaValue ManaPool;
-    public HashSet<Card> Permanents;
+    public List<Card> Permanents;
+    public int LandPlaysThisTurn;
+    public int MaxLandPlaysPerTurn;
   }
 
   public struct Action {
@@ -103,15 +134,32 @@ namespace AI {
     public abstract Card GetCard();
     public abstract ManaValue GetPrintedManaCost();
     public abstract List<CardType> GetCardTypes();
-    public abstract PlaySpeed GetPlaySpeed();
-    public abstract void PopulateActions(GameState gameState, ICollection<Action> actions);
+    public abstract void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone);
     public abstract void PerformAction(GameState gameState, Action action);
     public abstract void UndoAction(GameState gameState, Action action);
   }
 
-  public class AridMesaCard : AbstractCard {
-    public override Card GetCard() {
-      return Card.AridMesa;
+  public abstract class AbstractLand : AbstractCard {
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+      switch (zone) {
+        case Zone.Hand:
+          if ((gameState.GameStatus == GameStatus.FirstMain ||
+              gameState.GameStatus == GameStatus.SecondMain) &&
+              gameState.LandPlaysThisTurn < gameState.MaxLandPlaysPerTurn) {
+            actions.Add(new Action { ActionType = ActionType.PlayLand, Card = GetCard() });
+          }
+          return;
+      }
+    }
+  }
+
+  public abstract class AbstractFetchland : AbstractLand {
+    private BasicLandType _first;
+    private BasicLandType _second;
+
+    protected AbstractFetchland(BasicLandType first, BasicLandType second) {
+      _first = first;
+      _second = second;
     }
 
     public override ManaValue GetPrintedManaCost() {
@@ -122,12 +170,12 @@ namespace AI {
       return new List<CardType> { CardType.Land };
     }
 
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Land;
-    }
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+      base.PopulateActions(gameState, actions, zone);
+      switch (zone) {
+        case Zone.Battlefield:
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
+      }
     }
 
     public override void PerformAction(GameState gameState, Action action) {
@@ -139,33 +187,21 @@ namespace AI {
     }
   }
 
-  public class WoodedFoothillsCard : AbstractCard {
+  public class AridMesaCard : AbstractFetchland {
+    public AridMesaCard() : base(BasicLandType.Plains, BasicLandType.Mountain) {
+    }
+
+    public override Card GetCard() {
+      return Card.AridMesa;
+    }
+  }
+
+  public class WoodedFoothillsCard : AbstractFetchland {
+    public WoodedFoothillsCard() : base(BasicLandType.Mountain, BasicLandType.Forest) {
+    }
+
     public override Card GetCard() {
       return Card.WoodedFoothills;
-    }
-
-    public override ManaValue GetPrintedManaCost() {
-      return new ManaValue();
-    }
-
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Land };
-    }
-
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Land;
-    }
-
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
-    }
-
-    public override void PerformAction(GameState gameState, Action action) {
-      throw new System.NotImplementedException();
-    }
-
-    public override void UndoAction(GameState gameState, Action action) {
-      throw new System.NotImplementedException();
     }
   }
 
@@ -182,11 +218,7 @@ namespace AI {
       return new List<CardType> { CardType.Sorcery };
     }
 
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Sorcery;
-    }
-
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
       throw new System.NotImplementedException();
     }
 
@@ -212,11 +244,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Instant;
-    }
-
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
       throw new System.NotImplementedException();
     }
 
@@ -242,11 +270,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Instant;
-    }
-
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
       throw new System.NotImplementedException();
     }
 
@@ -272,11 +296,7 @@ namespace AI {
       return new List<CardType> { CardType.Creature };
     }
 
-    public override PlaySpeed GetPlaySpeed() {
-      return PlaySpeed.Sorcery;
-    }
-
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
       throw new System.NotImplementedException();
     }
 
