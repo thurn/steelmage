@@ -88,8 +88,16 @@ namespace AI {
     DeclareAsBlocker
   }
 
-  public struct CardState {
+  public enum CounterType {
+    PlusOnePlusOne,
+    MinusOneMinusOne,
+    Loyalty
+  }
 
+  public struct Permanent {
+    public Card Card;
+    public bool Tapped;
+    public Dictionary<CounterType, int> Counters;
   }
 
   public struct GameState {
@@ -97,7 +105,7 @@ namespace AI {
     public GameStatus GameStatus;
     public List<Card> Hand;
     public ManaValue ManaPool;
-    public List<Card> Permanents;
+    public List<Permanent> Permanents;
     public int LandPlaysThisTurn;
     public int MaxLandPlaysPerTurn;
   }
@@ -130,25 +138,37 @@ namespace AI {
     };
   }
 
+  public class GameStates {
+    public static bool CouldPlaySorcery(GameState gameState) {
+      return gameState.GameStatus == GameStatus.FirstMain ||
+             gameState.GameStatus == GameStatus.SecondMain;
+    }
+
+    public static bool CouldPlayLand(GameState gameState) {
+      return CouldPlaySorcery(gameState) &&
+          gameState.LandPlaysThisTurn < gameState.MaxLandPlaysPerTurn;
+    }
+  }
+
   public abstract class AbstractCard {
     public abstract Card GetCard();
     public abstract ManaValue GetPrintedManaCost();
     public abstract List<CardType> GetCardTypes();
-    public abstract void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone);
+
+    public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions);
+    public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
+        ICollection<Action> actions) { }
+    public virtual void PopulateGraveyardActions(GameState gameState, ICollection<Action> actions) { }
+    public virtual void PopulateStackActions(GameState gameState, ICollection<Action> actions) { }
+
     public abstract void PerformAction(GameState gameState, Action action);
     public abstract void UndoAction(GameState gameState, Action action);
   }
 
   public abstract class AbstractLand : AbstractCard {
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
-      switch (zone) {
-        case Zone.Hand:
-          if ((gameState.GameStatus == GameStatus.FirstMain ||
-              gameState.GameStatus == GameStatus.SecondMain) &&
-              gameState.LandPlaysThisTurn < gameState.MaxLandPlaysPerTurn) {
-            actions.Add(new Action { ActionType = ActionType.PlayLand, Card = GetCard() });
-          }
-          return;
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+      if (GameStates.CouldPlayLand(gameState)) {
+        actions.Add(new Action { ActionType = ActionType.PlayLand, Card = GetCard() });
       }
     }
   }
@@ -170,12 +190,19 @@ namespace AI {
       return new List<CardType> { CardType.Land };
     }
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
-      base.PopulateActions(gameState, actions, zone);
-      switch (zone) {
-        case Zone.Battlefield:
-
-      }
+    public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
+        ICollection<Action> actions) {
+      if (permanent.Tapped) return;
+      actions.Add(new Action {
+        Card = GetCard(),
+        ActionType = ActionType.ActivateAbility,
+        ActionChoices = _first
+      });
+      actions.Add(new Action {
+        Card = GetCard(),
+        ActionType = ActionType.ActivateAbility,
+        ActionChoices = _second
+      });
     }
 
     public override void PerformAction(GameState gameState, Action action) {
@@ -218,7 +245,7 @@ namespace AI {
       return new List<CardType> { CardType.Sorcery };
     }
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       throw new System.NotImplementedException();
     }
 
@@ -244,7 +271,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       throw new System.NotImplementedException();
     }
 
@@ -270,7 +297,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       throw new System.NotImplementedException();
     }
 
@@ -296,7 +323,7 @@ namespace AI {
       return new List<CardType> { CardType.Creature };
     }
 
-    public override void PopulateActions(GameState gameState, ICollection<Action> actions, Zone zone) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       throw new System.NotImplementedException();
     }
 
