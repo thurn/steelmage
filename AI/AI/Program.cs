@@ -173,6 +173,28 @@ namespace AI {
     }
   }
 
+  public abstract class AbstractInstant : AbstractCard {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+      actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+    }
+  }
+
+  public abstract class AbstractSorcery : AbstractCard {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+      if (GameStates.CouldPlaySorcery(gameState)) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+      }
+    }
+  }
+
+  public abstract class AbstractCreature : AbstractCard {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+      if (GameStates.CouldPlaySorcery(gameState)) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+      }
+    }
+  }
+
   public abstract class AbstractFetchland : AbstractLand {
     private BasicLandType _first;
     private BasicLandType _second;
@@ -232,7 +254,7 @@ namespace AI {
     }
   }
 
-  public class RiftBoltCard : AbstractCard {
+  public class RiftBoltCard : AbstractSorcery {
     public override Card GetCard() {
       return Card.RiftBolt;
     }
@@ -258,7 +280,7 @@ namespace AI {
     }
   }
 
-  public class SearingBlazeCard : AbstractCard {
+  public class SearingBlazeCard : AbstractInstant {
     public override Card GetCard() {
       return Card.SearingBlaze;
     }
@@ -284,7 +306,7 @@ namespace AI {
     }
   }
 
-  public class SkullcrackCard : AbstractCard {
+  public class SkullcrackCard : AbstractInstant {
     public override Card GetCard() {
       return Card.Skullcrack;
     }
@@ -310,7 +332,7 @@ namespace AI {
     }
   }
 
-  public class MonasterySwiftspearCard : AbstractCard {
+  public class MonasterySwiftspearCard : AbstractCreature {
     public override Card GetCard() {
       return Card.MonasterySwiftspear;
     }
