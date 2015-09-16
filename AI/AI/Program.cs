@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.Hosting;
 
 namespace AI {
 
@@ -63,10 +64,14 @@ namespace AI {
     ActiveStack,
     FirstMain,
     DeclareAttackers,
-    DeclareBlockers,
+    AfterDeclareAttackers,
+    AfterDeclareBlockers,
     SecondMain,
     OpponentUpkeep,
     OpponentBeginCombat,
+    OpponentAfterDeclareAttackers,
+    OpponentDeclareBlockers,
+    OpponentAfterDeclareBlockers,
     OpponentEndOfTurn
   }
 
@@ -82,7 +87,6 @@ namespace AI {
   public enum ActionType {
     PlayLand,
     CastSpell,
-    TapLand,
     ActivateAbility,
     DeclareAsAttacker,
     DeclareAsBlocker
@@ -94,13 +98,15 @@ namespace AI {
     Loyalty
   }
 
-  public struct Permanent {
+  public class Permanent {
+    public int Id;
     public Card Card;
     public bool Tapped;
     public Dictionary<CounterType, int> Counters;
+    public bool ControlledSinceStartOfTurn;
   }
 
-  public struct GameState {
+  public class GameState {
     public Turn Turn;
     public GameStatus GameStatus;
     public List<Card> Hand;
@@ -111,7 +117,7 @@ namespace AI {
   }
 
   public struct Action {
-    public Card Card;
+    public int Source;
     public ActionType ActionType;
     public System.ValueType ActionChoices;
   }
@@ -148,10 +154,27 @@ namespace AI {
       return CouldPlaySorcery(gameState) &&
           gameState.LandPlaysThisTurn < gameState.MaxLandPlaysPerTurn;
     }
+
+    public static bool CouldDeclareAttacks(GameState gameState) {
+      return gameState.GameStatus == GameStatus.DeclareAttackers;
+    }
+
+    public static bool CouldDeclareBlocks(GameState gameState) {
+      return gameState.GameStatus == GameStatus.OpponentDeclareBlockers;
+    }
+
+    public static bool ManaAvailable(GameState gameState, ManaValue manaValue) {
+      return true;
+    }
   }
 
   public abstract class AbstractCard {
     public abstract Card GetCard();
+
+    public int GetCardId() {
+      return (int)GetCard();
+    }
+
     public abstract ManaValue GetPrintedManaCost();
     public abstract List<CardType> GetCardTypes();
 
@@ -168,30 +191,50 @@ namespace AI {
   public abstract class AbstractLand : AbstractCard {
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       if (GameStates.CouldPlayLand(gameState)) {
-        actions.Add(new Action { ActionType = ActionType.PlayLand, Card = GetCard() });
+        actions.Add(new Action { ActionType = ActionType.PlayLand, Source = GetCardId() });
       }
     }
   }
 
   public abstract class AbstractInstant : AbstractCard {
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+      if (GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
+      }
     }
   }
 
   public abstract class AbstractSorcery : AbstractCard {
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      if (GameStates.CouldPlaySorcery(gameState)) {
-        actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+      if (GameStates.CouldPlaySorcery(gameState) &&
+          GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
       }
     }
   }
 
   public abstract class AbstractCreature : AbstractCard {
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      if (GameStates.CouldPlaySorcery(gameState)) {
-        actions.Add(new Action { ActionType = ActionType.CastSpell, Card = GetCard() });
+      if (GameStates.CouldPlaySorcery(gameState) &&
+          GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
       }
+    }
+
+    public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
+      ICollection<Action> actions) {
+      if (GameStates.CouldDeclareAttacks(gameState) && !permanent.Tapped &&
+          CanAttack(gameState, permanent)) {
+        actions.Add(new Action { ActionType = ActionType.DeclareAsAttacker, Source = permanent.Id });
+      }
+
+      if (GameStates.CouldDeclareBlocks(gameState) && !permanent.Tapped) {
+        actions.Add(new Action { ActionType = ActionType.DeclareAsBlocker, Source = permanent.Id });
+      }
+    }
+
+    protected virtual bool CanAttack(GameState gameState, Permanent permanent) {
+      return permanent.ControlledSinceStartOfTurn;
     }
   }
 
@@ -216,12 +259,12 @@ namespace AI {
         ICollection<Action> actions) {
       if (permanent.Tapped) return;
       actions.Add(new Action {
-        Card = GetCard(),
+        Source = GetCardId(),
         ActionType = ActionType.ActivateAbility,
         ActionChoices = _first
       });
       actions.Add(new Action {
-        Card = GetCard(),
+        Source = GetCardId(),
         ActionType = ActionType.ActivateAbility,
         ActionChoices = _second
       });
@@ -267,8 +310,15 @@ namespace AI {
       return new List<CardType> { CardType.Sorcery };
     }
 
+    public ManaValue GetSuspendCost() {
+      return new ManaValue { RedValue = 1 };
+    }
+
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
+      base.PopulateHandActions(gameState, actions);
+      if (GameStates.ManaAvailable(gameState, GetSuspendCost())) {
+        actions.Add(new Action { Source = GetCardId(), ActionType = ActionType.ActivateAbility });
+      }
     }
 
     public override void PerformAction(GameState gameState, Action action) {
@@ -293,10 +343,6 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
-    }
-
     public override void PerformAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
@@ -317,10 +363,6 @@ namespace AI {
 
     public override List<CardType> GetCardTypes() {
       return new List<CardType> { CardType.Instant };
-    }
-
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
     }
 
     public override void PerformAction(GameState gameState, Action action) {
@@ -345,8 +387,8 @@ namespace AI {
       return new List<CardType> { CardType.Creature };
     }
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      throw new System.NotImplementedException();
+    protected override bool CanAttack(GameState gameState, Permanent permanent) {
+      return true;
     }
 
     public override void PerformAction(GameState gameState, Action action) {
