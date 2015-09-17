@@ -15,7 +15,8 @@ namespace AI {
     Blue,
     Black,
     Red,
-    Green
+    Green,
+    Colorless
   }
 
   public enum BasicLandType {
@@ -37,22 +38,25 @@ namespace AI {
     Tribal
   }
 
-  public struct ManaValue {
-    public int GenericValue;
-    public int WhiteValue;
-    public int BlueValue;
-    public int BlackValue;
-    public int RedValue;
-    public int GreenValue;
+  public enum CardSupertype {
+    Legendary,
+    Basic
   }
 
-  public enum Card {
-    AridMesa,
-    WoodedFoothills,
-    RiftBolt,
-    SearingBlaze,
-    Skullcrack,
-    MonasterySwiftspear
+  public struct ManaValue {
+    public bool Absent;
+    public byte GenericValue;
+    public byte WhiteValue;
+    public byte BlueValue;
+    public byte BlackValue;
+    public byte RedValue;
+    public byte GreenValue;
+  }
+
+  public struct PowerAndToughness {
+    public bool Absent;
+    public byte Power;
+    public byte Toughness;
   }
 
   public enum Turn {
@@ -112,6 +116,8 @@ namespace AI {
     public List<Card> Hand;
     public ManaValue ManaPool;
     public List<Permanent> Permanents;
+    public List<Card> Library;
+    public HashSet<Card> Decklist;
     public int LandPlaysThisTurn;
     public int MaxLandPlaysPerTurn;
   }
@@ -126,15 +132,23 @@ namespace AI {
     GameState _gameState;
   }
 
-  public class CardData {
-    public static void Main() {
-      System.Console.WriteLine("Hello, World!");
-      System.Console.ReadLine();
-    }
+  public enum Card {
+    Mountain,
+    StompingGround,
+    SacredFoundry,
+    AridMesa,
+    WoodedFoothills,
+    RiftBolt,
+    SearingBlaze,
+    Skullcrack,
+    MonasterySwiftspear,
   }
 
   public class CardRegistry {
     public static Dictionary<Card, AbstractCard> Cards = new Dictionary<Card, AbstractCard> {
+      {Card.Mountain, new MountainCard()},
+      {Card.StompingGround, new StompingGroundCard() },
+      {Card.SacredFoundry, new SacredFoundryCard() },
       {Card.AridMesa, new AridMesaCard()},
       {Card.WoodedFoothills, new WoodedFoothillsCard()},
       {Card.RiftBolt, new RiftBoltCard()},
@@ -142,6 +156,13 @@ namespace AI {
       {Card.Skullcrack, new SkullcrackCard()},
       {Card.MonasterySwiftspear, new MonasterySwiftspearCard()},
     };
+  }
+
+  public class Program {
+    public static void Main() {
+      System.Console.WriteLine("Hello, World!");
+      System.Console.ReadLine();
+    }
   }
 
   public class GameStates {
@@ -179,12 +200,16 @@ namespace AI {
     public abstract List<CardType> GetCardTypes();
 
     public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions);
-    public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
-        ICollection<Action> actions) { }
-    public virtual void PopulateGraveyardActions(GameState gameState, ICollection<Action> actions) { }
-    public virtual void PopulateStackActions(GameState gameState, ICollection<Action> actions) { }
 
-    public abstract void PerformAction(GameState gameState, Action action);
+    public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
+      ICollection<Action> actions) {
+    }
+
+    public virtual void PerformPermanentAction(GameState gameState, Action action,
+      Permanent permanent) {
+    }
+
+    public abstract void PerformHandAction(GameState gameState, Action action);
     public abstract void UndoAction(GameState gameState, Action action);
   }
 
@@ -193,6 +218,30 @@ namespace AI {
       if (GameStates.CouldPlayLand(gameState)) {
         actions.Add(new Action { ActionType = ActionType.PlayLand, Source = GetCardId() });
       }
+    }
+
+    public override ManaValue GetPrintedManaCost() {
+      return new ManaValue { Absent = true };
+    }
+
+    public override List<CardType> GetCardTypes() {
+      return new List<CardType> { CardType.Land };
+    }
+
+    public override void PerformHandAction(GameState gameState, Action action) {
+
+    }
+
+    public override void UndoAction(GameState gameState, Action action) {
+
+    }
+  }
+
+  public abstract class AbstractBasicLand : AbstractLand {
+    private BasicLandType _type;
+
+    protected AbstractBasicLand(BasicLandType type) {
+      _type = type;
     }
   }
 
@@ -247,14 +296,6 @@ namespace AI {
       _second = second;
     }
 
-    public override ManaValue GetPrintedManaCost() {
-      return new ManaValue();
-    }
-
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Land };
-    }
-
     public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
         ICollection<Action> actions) {
       if (permanent.Tapped) return;
@@ -270,18 +311,47 @@ namespace AI {
       });
     }
 
-    public override void PerformAction(GameState gameState, Action action) {
-      throw new System.NotImplementedException();
-    }
-
     public override void UndoAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
   }
 
-  public class AridMesaCard : AbstractFetchland {
-    public AridMesaCard() : base(BasicLandType.Plains, BasicLandType.Mountain) {
+  public abstract class AbstractShockLand : AbstractLand {
+    private BasicLandType _first;
+    private BasicLandType _second;
+
+    protected AbstractShockLand(BasicLandType first, BasicLandType second) {
+      _first = first;
+      _second = second;
     }
+  }
+
+  public class MountainCard : AbstractBasicLand {
+    public MountainCard() : base(BasicLandType.Mountain) { }
+
+    public override Card GetCard() {
+      return Card.Mountain;
+    }
+  }
+
+  public class StompingGroundCard : AbstractShockLand {
+    public StompingGroundCard() : base(BasicLandType.Forest, BasicLandType.Mountain) { }
+
+    public override Card GetCard() {
+      return Card.StompingGround;
+    }
+  }
+
+  public class SacredFoundryCard : AbstractShockLand {
+    public SacredFoundryCard() : base(BasicLandType.Forest, BasicLandType.Mountain) { }
+
+    public override Card GetCard() {
+      return Card.SacredFoundry;
+    }
+  }
+
+  public class AridMesaCard : AbstractFetchland {
+    public AridMesaCard() : base(BasicLandType.Plains, BasicLandType.Mountain) { }
 
     public override Card GetCard() {
       return Card.AridMesa;
@@ -289,8 +359,7 @@ namespace AI {
   }
 
   public class WoodedFoothillsCard : AbstractFetchland {
-    public WoodedFoothillsCard() : base(BasicLandType.Mountain, BasicLandType.Forest) {
-    }
+    public WoodedFoothillsCard() : base(BasicLandType.Mountain, BasicLandType.Forest) { }
 
     public override Card GetCard() {
       return Card.WoodedFoothills;
@@ -321,7 +390,7 @@ namespace AI {
       }
     }
 
-    public override void PerformAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
 
@@ -343,7 +412,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override void PerformAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
 
@@ -365,7 +434,7 @@ namespace AI {
       return new List<CardType> { CardType.Instant };
     }
 
-    public override void PerformAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
 
@@ -391,7 +460,7 @@ namespace AI {
       return true;
     }
 
-    public override void PerformAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
 
