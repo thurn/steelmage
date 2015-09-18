@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
 using System.Runtime.Hosting;
 
 namespace AI {
@@ -41,6 +43,16 @@ namespace AI {
   public enum CardSupertype {
     Legendary,
     Basic
+  }
+
+  public enum CardSubtype {
+    Spirit,
+    Arcane,
+    Goblin,
+    Scout,
+    Human,
+    Monk,
+    Wizard
   }
 
   public struct ManaValue {
@@ -91,6 +103,7 @@ namespace AI {
   public enum ActionType {
     PlayLand,
     CastSpell,
+    TapLandForMana,
     ActivateAbility,
     DeclareAsAttacker,
     DeclareAsBlocker
@@ -118,8 +131,10 @@ namespace AI {
     public List<Permanent> Permanents;
     public List<Card> Library;
     public HashSet<Card> Decklist;
-    public int LandPlaysThisTurn;
-    public int MaxLandPlaysPerTurn;
+    public byte LifeTotal;
+    public byte OpponentLifeTotal;
+    public byte LandPlaysThisTurn;
+    public byte MaxLandPlaysPerTurn;
   }
 
   public struct Action {
@@ -156,6 +171,25 @@ namespace AI {
       {Card.Skullcrack, new SkullcrackCard()},
       {Card.MonasterySwiftspear, new MonasterySwiftspearCard()},
     };
+  }
+
+  public class BasicLandTypesRegistry {
+    public static Dictionary<BasicLandType, HashSet<Card>> BasicLandTypeCards =
+      new Dictionary<BasicLandType, HashSet<Card>> {
+        {BasicLandType.Plains, new HashSet<Card> {
+          Card.SacredFoundry
+        }},
+        {BasicLandType.Island, new HashSet<Card> {}},
+        {BasicLandType.Swamp, new HashSet<Card> {}},
+        {BasicLandType.Mountain, new HashSet<Card> {
+          Card.Mountain,
+          Card.SacredFoundry,
+          Card.StompingGround
+        }},
+        {BasicLandType.Forest, new HashSet<Card> {
+          Card.StompingGround
+        }}
+      };
   }
 
   public class Program {
@@ -197,17 +231,27 @@ namespace AI {
     }
 
     public abstract ManaValue GetPrintedManaCost();
-    public abstract List<CardType> GetCardTypes();
+
+    public virtual PowerAndToughness GetPrintedPowerAndToughness() {
+      return new PowerAndToughness { Absent = true };
+    }
+
+    public virtual HashSet<CardSupertype> GetCardSupertypes() {
+      return new HashSet<CardSupertype>();
+    }
+    public abstract HashSet<CardType> GetCardTypes();
+
+    public virtual HashSet<CardSubtype> GetCardSubtypes() {
+      return new HashSet<CardSubtype>();
+    }
 
     public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions);
 
     public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
-      ICollection<Action> actions) {
-    }
+      ICollection<Action> actions) { }
 
     public virtual void PerformPermanentAction(GameState gameState, Action action,
-      Permanent permanent) {
-    }
+      Permanent permanent) { }
 
     public abstract void PerformHandAction(GameState gameState, Action action);
     public abstract void UndoAction(GameState gameState, Action action);
@@ -224,8 +268,8 @@ namespace AI {
       return new ManaValue { Absent = true };
     }
 
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Land };
+    public override HashSet<CardType> GetCardTypes() {
+      return new HashSet<CardType> { CardType.Land };
     }
 
     public override void PerformHandAction(GameState gameState, Action action) {
@@ -237,19 +281,15 @@ namespace AI {
     }
   }
 
-  public abstract class AbstractBasicLand : AbstractLand {
-    private BasicLandType _type;
-
-    protected AbstractBasicLand(BasicLandType type) {
-      _type = type;
-    }
-  }
-
   public abstract class AbstractInstant : AbstractCard {
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       if (GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
         actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
       }
+    }
+
+    public override HashSet<CardType> GetCardTypes() {
+      return new HashSet<CardType> { CardType.Instant };
     }
   }
 
@@ -260,14 +300,25 @@ namespace AI {
         actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
       }
     }
+
+    public override HashSet<CardType> GetCardTypes() {
+      return new HashSet<CardType> { CardType.Sorcery };
+    }
   }
 
   public abstract class AbstractCreature : AbstractCard {
+    public abstract override PowerAndToughness GetPrintedPowerAndToughness();
+    public abstract override HashSet<CardSubtype> GetCardSubtypes();
+
     public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
       if (GameStates.CouldPlaySorcery(gameState) &&
           GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
         actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
       }
+    }
+
+    public override HashSet<CardType> GetCardTypes() {
+      return new HashSet<CardType> { CardType.Creature };
     }
 
     public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
@@ -287,6 +338,25 @@ namespace AI {
     }
   }
 
+  public abstract class AbstractBasicLand : AbstractLand {
+    private BasicLandType _type;
+
+    protected AbstractBasicLand(BasicLandType type) {
+      _type = type;
+    }
+
+    public override HashSet<CardSupertype> GetCardSupertypes() {
+      return new HashSet<CardSupertype> { CardSupertype.Basic };
+    }
+
+    public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
+      ICollection<Action> actions) {
+      if (!permanent.Tapped) {
+        actions.Add(new Action { Source = permanent.Id, ActionType = ActionType.TapLandForMana });
+      }
+    }
+  }
+
   public abstract class AbstractFetchland : AbstractLand {
     private BasicLandType _first;
     private BasicLandType _second;
@@ -298,17 +368,18 @@ namespace AI {
 
     public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
         ICollection<Action> actions) {
-      if (permanent.Tapped) return;
-      actions.Add(new Action {
-        Source = GetCardId(),
-        ActionType = ActionType.ActivateAbility,
-        ActionChoices = _first
-      });
-      actions.Add(new Action {
-        Source = GetCardId(),
-        ActionType = ActionType.ActivateAbility,
-        ActionChoices = _second
-      });
+      if (permanent.Tapped || gameState.LifeTotal < 2) return;
+      var fetchableCards = BasicLandTypesRegistry.BasicLandTypeCards[_first].Union(
+          BasicLandTypesRegistry.BasicLandTypeCards[_second]);
+      foreach (var card in fetchableCards) {
+        if (gameState.Decklist.Contains(card)) {
+          actions.Add(new Action {
+            Source = GetCardId(),
+            ActionType = ActionType.ActivateAbility,
+            ActionChoices = card
+          });
+        }
+      }
     }
 
     public override void UndoAction(GameState gameState, Action action) {
@@ -375,10 +446,6 @@ namespace AI {
       return new ManaValue { RedValue = 1, GenericValue = 2 };
     }
 
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Sorcery };
-    }
-
     public ManaValue GetSuspendCost() {
       return new ManaValue { RedValue = 1 };
     }
@@ -408,10 +475,6 @@ namespace AI {
       return new ManaValue { RedValue = 2 };
     }
 
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Instant };
-    }
-
     public override void PerformHandAction(GameState gameState, Action action) {
       throw new System.NotImplementedException();
     }
@@ -428,10 +491,6 @@ namespace AI {
 
     public override ManaValue GetPrintedManaCost() {
       return new ManaValue { RedValue = 1, GenericValue = 1 };
-    }
-
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Instant };
     }
 
     public override void PerformHandAction(GameState gameState, Action action) {
@@ -452,8 +511,12 @@ namespace AI {
       return new ManaValue { RedValue = 1 };
     }
 
-    public override List<CardType> GetCardTypes() {
-      return new List<CardType> { CardType.Creature };
+    public override HashSet<CardSubtype> GetCardSubtypes() {
+      return new HashSet<CardSubtype> { CardSubtype.Human, CardSubtype.Monk };
+    }
+
+    public override PowerAndToughness GetPrintedPowerAndToughness() {
+      return new PowerAndToughness { Power = 1, Toughness = 2 };
     }
 
     protected override bool CanAttack(GameState gameState, Permanent permanent) {
