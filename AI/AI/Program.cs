@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Runtime.Hosting;
 
 namespace AI {
+  public static class Empty
+  {
+    public static readonly ValueType Value = default(ValueType);
+  }
 
   // When can you play this card?
   public enum PlaySpeed {
@@ -101,6 +104,7 @@ namespace AI {
   }
 
   public enum ActionType {
+    Unknown,
     PlayLand,
     CastSpell,
     TapLandForMana,
@@ -128,7 +132,7 @@ namespace AI {
     public GameStatus GameStatus;
     public List<Card> Hand;
     public ManaValue ManaPool;
-    public List<Permanent> Permanents;
+    public Dictionary<int, Permanent> Permanents;
     public List<Card> Library;
     public HashSet<Card> Decklist;
     public byte LifeTotal;
@@ -192,9 +196,19 @@ namespace AI {
       };
   }
 
+  public class BasicLandColorsRegistry {
+    public static Dictionary<BasicLandType, Color> BasicLandColors =
+      new Dictionary<BasicLandType, Color> {
+        {BasicLandType.Plains, Color.White},
+        {BasicLandType.Island, Color.Blue},
+        {BasicLandType.Swamp, Color.Black},
+        {BasicLandType.Mountain, Color.Red},
+        {BasicLandType.Forest, Color.Green}
+      };
+  }
+
   public class Program {
     public static void Main() {
-      System.Console.WriteLine("Hello, World!");
       System.Console.ReadLine();
     }
   }
@@ -253,8 +267,12 @@ namespace AI {
     public virtual void PerformPermanentAction(GameState gameState, Action action,
       Permanent permanent) { }
 
-    public abstract void PerformHandAction(GameState gameState, Action action);
+    public abstract void PerformHandAction(GameState gameState, Action action, int handIndex);
     public abstract void UndoAction(GameState gameState, Action action);
+
+    public void RemoveFromHand(GameState gameState, int handIndex) {
+      gameState.Hand.RemoveAt(handIndex);
+    }
   }
 
   public abstract class AbstractLand : AbstractCard {
@@ -272,7 +290,7 @@ namespace AI {
       return new HashSet<CardType> { CardType.Land };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
 
     }
 
@@ -339,7 +357,7 @@ namespace AI {
   }
 
   public abstract class AbstractBasicLand : AbstractLand {
-    private BasicLandType _type;
+    private readonly BasicLandType _type;
 
     protected AbstractBasicLand(BasicLandType type) {
       _type = type;
@@ -351,15 +369,17 @@ namespace AI {
 
     public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
       ICollection<Action> actions) {
-      if (!permanent.Tapped) {
-        actions.Add(new Action { Source = permanent.Id, ActionType = ActionType.TapLandForMana });
-      }
+      if (permanent.Tapped) return;
+      actions.Add(new Action {
+        Source = permanent.Id,
+        ActionType = ActionType.TapLandForMana
+      });
     }
   }
 
   public abstract class AbstractFetchland : AbstractLand {
-    private BasicLandType _first;
-    private BasicLandType _second;
+    private readonly BasicLandType _first;
+    private readonly BasicLandType _second;
 
     protected AbstractFetchland(BasicLandType first, BasicLandType second) {
       _first = first;
@@ -388,12 +408,46 @@ namespace AI {
   }
 
   public abstract class AbstractShockLand : AbstractLand {
-    private BasicLandType _first;
-    private BasicLandType _second;
+    private readonly BasicLandType _first;
+    private readonly BasicLandType _second;
+
+    private enum Choice {
+      Shock,
+      DontShock
+    }
 
     protected AbstractShockLand(BasicLandType first, BasicLandType second) {
       _first = first;
       _second = second;
+    }
+
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+      if (!GameStates.CouldPlayLand(gameState)) return;
+      actions.Add(new Action {
+        ActionType = ActionType.PlayLand,
+        Source = GetCardId(),
+        ActionChoices = Choice.Shock
+      });
+      actions.Add(new Action {
+        ActionType = ActionType.PlayLand,
+        Source = GetCardId(),
+        ActionChoices = Choice.DontShock
+      });
+    }
+
+    public override void PopulatePermanentActions(GameState gameState, Permanent permanent,
+        ICollection<Action> actions) {
+      if (permanent.Tapped) return;
+      actions.Add(new Action {
+        ActionType = ActionType.TapLandForMana,
+        Source = permanent.Id,
+        ActionChoices = _first
+      });
+      actions.Add(new Action {
+        ActionType = ActionType.TapLandForMana,
+        Source = permanent.Id,
+        ActionChoices = _second
+      });
     }
   }
 
@@ -457,7 +511,7 @@ namespace AI {
       }
     }
 
-    public override void PerformHandAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
       throw new System.NotImplementedException();
     }
 
@@ -475,7 +529,7 @@ namespace AI {
       return new ManaValue { RedValue = 2 };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
       throw new System.NotImplementedException();
     }
 
@@ -493,7 +547,7 @@ namespace AI {
       return new ManaValue { RedValue = 1, GenericValue = 1 };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
       throw new System.NotImplementedException();
     }
 
@@ -523,7 +577,7 @@ namespace AI {
       return true;
     }
 
-    public override void PerformHandAction(GameState gameState, Action action) {
+    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
       throw new System.NotImplementedException();
     }
 
