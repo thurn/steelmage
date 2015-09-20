@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace AI {
-  public static class Empty
-  {
+  public static class Empty {
     public static readonly ValueType Value = default(ValueType);
   }
 
@@ -127,18 +126,24 @@ namespace AI {
     public bool ControlledSinceStartOfTurn;
   }
 
+  public struct StackItem {
+    public Card Source;
+  }
+
   public class GameState {
     public Turn Turn;
     public GameStatus GameStatus;
     public List<Card> Hand;
     public ManaValue ManaPool;
     public Dictionary<int, Permanent> Permanents;
+    public List<StackItem> Stack;
     public List<Card> Library;
     public HashSet<Card> Decklist;
     public byte LifeTotal;
     public byte OpponentLifeTotal;
     public byte LandPlaysThisTurn;
     public byte MaxLandPlaysPerTurn;
+    public int NextId;
   }
 
   public struct Action {
@@ -235,6 +240,22 @@ namespace AI {
     public static bool ManaAvailable(GameState gameState, ManaValue manaValue) {
       return true;
     }
+
+    public static void CreatePermanent(GameState gameState, Card card) {
+      var permanent = new Permanent {
+        Id = gameState.NextId++,
+        Card = card,
+        ControlledSinceStartOfTurn = false,
+        Tapped = false
+      };
+      gameState.Permanents.Add(permanent.Id, permanent);
+    }
+
+    public static void MoveToBattlefield(GameState gameState, int handIndex) {
+      var card = gameState.Hand[handIndex];
+      gameState.Hand.RemoveAt(handIndex);
+      CreatePermanent(gameState, card);
+    }
   }
 
   public abstract class AbstractCard {
@@ -264,15 +285,13 @@ namespace AI {
     public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
       ICollection<Action> actions) { }
 
-    public virtual void PerformPermanentAction(GameState gameState, Action action,
-      Permanent permanent) { }
-
-    public abstract void PerformHandAction(GameState gameState, Action action, int handIndex);
-    public abstract void UndoAction(GameState gameState, Action action);
-
-    public void RemoveFromHand(GameState gameState, int handIndex) {
-      gameState.Hand.RemoveAt(handIndex);
+    public virtual ValueType PerformPermanentAction(GameState gameState, Action action,
+      Permanent permanent) {
+      return Empty.Value;
     }
+
+    public abstract ValueType PerformHandAction(GameState gameState, Action action, int handIndex);
+    public abstract void UndoAction(GameState gameState, Action action, ValueType undoState);
   }
 
   public abstract class AbstractLand : AbstractCard {
@@ -290,11 +309,12 @@ namespace AI {
       return new HashSet<CardType> { CardType.Land };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
-
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+        int handIndex) {
+      return Empty.Value;
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
 
     }
   }
@@ -402,7 +422,7 @@ namespace AI {
       }
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -511,11 +531,12 @@ namespace AI {
       }
     }
 
-    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+      int handIndex) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -529,11 +550,12 @@ namespace AI {
       return new ManaValue { RedValue = 2 };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+        int handIndex) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -547,11 +569,12 @@ namespace AI {
       return new ManaValue { RedValue = 1, GenericValue = 1 };
     }
 
-    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+        int handIndex) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -577,11 +600,12 @@ namespace AI {
       return true;
     }
 
-    public override void PerformHandAction(GameState gameState, Action action, int handIndex) {
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+        int handIndex) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action) {
+    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
