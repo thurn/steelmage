@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AI {
@@ -127,13 +128,14 @@ namespace AI {
   }
 
   public struct StackItem {
+    public int Id;
     public Card Source;
   }
 
   public class GameState {
     public Turn Turn;
     public GameStatus GameStatus;
-    public List<Card> Hand;
+    public Dictionary<int, Card> Hand;
     public ManaValue ManaPool;
     public Dictionary<int, Permanent> Permanents;
     public List<StackItem> Stack;
@@ -218,6 +220,12 @@ namespace AI {
     }
   }
 
+  public struct UndoZoneChange {
+    public int SourceId;
+    public int DestinationId;
+    public Card Card;
+  }
+
   public class GameStates {
     public static bool CouldPlaySorcery(GameState gameState) {
       return gameState.GameStatus == GameStatus.FirstMain ||
@@ -241,7 +249,7 @@ namespace AI {
       return true;
     }
 
-    public static void CreatePermanent(GameState gameState, Card card) {
+    public static int CreatePermanent(GameState gameState, Card card) {
       var permanent = new Permanent {
         Id = gameState.NextId++,
         Card = card,
@@ -249,12 +257,47 @@ namespace AI {
         Tapped = false
       };
       gameState.Permanents.Add(permanent.Id, permanent);
+      return permanent.Id;
     }
 
-    public static void MoveToBattlefield(GameState gameState, int handIndex) {
-      var card = gameState.Hand[handIndex];
-      gameState.Hand.RemoveAt(handIndex);
-      CreatePermanent(gameState, card);
+    public static int CreateStackItem(GameState gameState, Card source) {
+      var stackItem = new StackItem {
+        Id = gameState.NextId++,
+        Source = source
+      };
+      gameState.Stack.Add(stackItem);
+      return stackItem.Id;
+    }
+
+    public static int AddToHand(GameState gameState, Card card) {
+      var id = gameState.NextId++;
+      gameState.Hand.Add(id, card);
+      return id;
+    }
+
+    public static UndoZoneChange MoveFromHandToBattlefield(GameState gameState, int handId) {
+      var card = gameState.Hand[handId];
+      gameState.Hand.Remove(handId);
+      var permanentId = CreatePermanent(gameState, card);
+      return new UndoZoneChange { Card = card, SourceId = handId, DestinationId = permanentId };
+    }
+
+    public static UndoZoneChange MoveFromBattlefieldToHand(GameState gameState, int permanentId) {
+      var permanent = gameState.Permanents[permanentId];
+      gameState.Permanents.Remove(permanentId);
+      var handId = AddToHand(gameState, permanent.Card);
+      return new UndoZoneChange {
+        Card = permanent.Card,
+        SourceId = permanent.Id,
+        DestinationId = handId
+      };
+    }
+
+    public static UndoZoneChange MoveFromHandToStack(GameState gameState, int handId) {
+      var card = gameState.Hand[handId];
+      gameState.Hand.Remove(handId);
+      var stackId = CreateStackItem(gameState, card);
+      return new UndoZoneChange {Card = card, SourceId = handId, DestinationId = stackId};
     }
   }
 
@@ -311,7 +354,7 @@ namespace AI {
 
     public override ValueType PerformHandAction(GameState gameState, Action action,
         int handIndex) {
-      return Empty.Value;
+      return GameStates.MoveFromHandToBattlefield(gameState, handIndex);
     }
 
     public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
