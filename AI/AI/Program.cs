@@ -297,7 +297,14 @@ namespace AI {
       }
       result.GreenValue = (byte)floating;
 
-      return genericToPay <= 0;
+      if (genericToPay > 0) return false;
+      result.Absent = false;
+      return true;
+    }
+
+    public static bool ManaAvailable(GameState gameState, ManaValue manaValue) {
+      ManaValue result;
+      return ManaAvailable(gameState, manaValue, out result);
     }
 
     public static int CreatePermanent(GameState gameState, Card card) {
@@ -355,10 +362,6 @@ namespace AI {
   public abstract class AbstractCard {
     public abstract Card GetCard();
 
-    public int GetCardId() {
-      return (int)GetCard();
-    }
-
     public abstract ManaValue GetPrintedManaCost();
 
     public virtual PowerAndToughness GetPrintedPowerAndToughness() {
@@ -374,24 +377,31 @@ namespace AI {
       return new HashSet<CardSubtype>();
     }
 
-    public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions);
+    public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions,
+        int handId);
 
     public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
-      ICollection<Action> actions) { }
+        ICollection<Action> actions) { }
 
     public virtual ValueType PerformPermanentAction(GameState gameState, Action action,
       Permanent permanent) {
       return Empty.Value;
     }
 
-    public abstract ValueType PerformHandAction(GameState gameState, Action action, int handIndex);
-    public abstract void UndoAction(GameState gameState, Action action, ValueType undoState);
+    public virtual void UndoPermanentAction(GameState gameState, Action action) { }
+
+    public abstract ValueType PerformHandAction(GameState gameState, Action action, int handId);
+    public abstract void UndoHandAction(GameState gameState, Action action, ValueType undoState);
+
+    public abstract ValueType Resolve(GameState gameState);
+    public abstract void Unresolve(GameState gameState, ValueType undoState);
   }
 
   public abstract class AbstractLand : AbstractCard {
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions,
+        int handId) {
       if (GameStates.CouldPlayLand(gameState)) {
-        actions.Add(new Action { ActionType = ActionType.PlayLand, Source = GetCardId() });
+        actions.Add(new Action { ActionType = ActionType.PlayLand, Source = handId });
       }
     }
 
@@ -408,17 +418,26 @@ namespace AI {
       return GameStates.MoveFromHandToBattlefield(gameState, handIndex);
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       var undoZoneChange = (UndoZoneChange)undoState;
       GameStates.MoveFromBattlefieldToHand(gameState, undoZoneChange.DestinationId);
     }
   }
 
-  public abstract class AbstractInstant : AbstractCard {
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      if (GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
-        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
+  public abstract class AbstractSpell : AbstractCard {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions,
+        int handId) {
+      if (GameStates.ManaAvailable(gameState, GetPrintedManaCost()) && CanCast(gameState)) {
+        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = handId });
       }
+    }
+
+    public abstract bool CanCast(GameState gameState);
+  }
+
+  public abstract class AbstractInstant : AbstractSpell {
+    public override bool CanCast(GameState gameState) {
+      return true;
     }
 
     public override HashSet<CardType> GetCardTypes() {
@@ -426,12 +445,9 @@ namespace AI {
     }
   }
 
-  public abstract class AbstractSorcery : AbstractCard {
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      if (GameStates.CouldPlaySorcery(gameState) &&
-          GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
-        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
-      }
+  public abstract class AbstractSorcery : AbstractSpell {
+    public override bool CanCast(GameState gameState) {
+      return GameStates.CouldPlaySorcery(gameState);
     }
 
     public override HashSet<CardType> GetCardTypes() {
@@ -439,15 +455,12 @@ namespace AI {
     }
   }
 
-  public abstract class AbstractCreature : AbstractCard {
+  public abstract class AbstractCreature : AbstractSpell {
     public abstract override PowerAndToughness GetPrintedPowerAndToughness();
     public abstract override HashSet<CardSubtype> GetCardSubtypes();
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      if (GameStates.CouldPlaySorcery(gameState) &&
-          GameStates.ManaAvailable(gameState, GetPrintedManaCost())) {
-        actions.Add(new Action { ActionType = ActionType.CastSpell, Source = GetCardId() });
-      }
+    public override bool CanCast(GameState gameState) {
+      return GameStates.CouldPlaySorcery(gameState);
     }
 
     public override HashSet<CardType> GetCardTypes() {
@@ -509,7 +522,7 @@ namespace AI {
       foreach (var card in fetchableCards) {
         if (gameState.Decklist.Contains(card)) {
           actions.Add(new Action {
-            Source = GetCardId(),
+            Source = permanent.Id,
             ActionType = ActionType.ActivateAbility,
             ActionChoices = card
           });
@@ -517,7 +530,7 @@ namespace AI {
       }
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -536,16 +549,17 @@ namespace AI {
       _second = second;
     }
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions,
+        int handId) {
       if (!GameStates.CouldPlayLand(gameState)) return;
       actions.Add(new Action {
         ActionType = ActionType.PlayLand,
-        Source = GetCardId(),
+        Source = handId,
         ActionChoices = Choice.Shock
       });
       actions.Add(new Action {
         ActionType = ActionType.PlayLand,
-        Source = GetCardId(),
+        Source = handId,
         ActionChoices = Choice.DontShock
       });
     }
@@ -619,10 +633,11 @@ namespace AI {
       return new ManaValue { RedValue = 1 };
     }
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions) {
-      base.PopulateHandActions(gameState, actions);
+    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions,
+        int handId) {
+      base.PopulateHandActions(gameState, actions, handId);
       if (GameStates.ManaAvailable(gameState, GetSuspendCost())) {
-        actions.Add(new Action { Source = GetCardId(), ActionType = ActionType.ActivateAbility });
+        actions.Add(new Action { Source = handId, ActionType = ActionType.ActivateAbility });
       }
     }
 
@@ -631,7 +646,7 @@ namespace AI {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -650,7 +665,7 @@ namespace AI {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -669,7 +684,7 @@ namespace AI {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -700,7 +715,7 @@ namespace AI {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
