@@ -245,8 +245,59 @@ namespace AI {
       return gameState.GameStatus == GameStatus.OpponentDeclareBlockers;
     }
 
-    public static bool ManaAvailable(GameState gameState, ManaValue manaValue) {
-      return true;
+    public static bool ManaAvailable(GameState gameState, ManaValue manaValue,
+        out ManaValue result) {
+      result = new ManaValue { Absent = true };
+      var pool = gameState.ManaPool;
+      var genericToPay = manaValue.GenericValue - pool.GenericValue;
+      result.GenericValue = (byte)Math.Max(0, pool.GenericValue - manaValue.GenericValue);
+
+      var floating = pool.WhiteValue - manaValue.WhiteValue;
+      if (floating < 0) return false;
+      if (genericToPay > 0) {
+        var genericPaid = Math.Min(genericToPay, floating);
+        genericToPay -= genericPaid;
+        floating -= genericPaid;
+      }
+      result.WhiteValue = (byte)floating;
+
+      floating = pool.BlueValue - manaValue.BlueValue;
+      if (floating < 0) return false;
+      if (genericToPay > 0) {
+        var genericPaid = Math.Min(genericToPay, floating);
+        genericToPay -= genericPaid;
+        floating -= genericPaid;
+      }
+      result.BlueValue = (byte)floating;
+
+      floating = pool.BlackValue - manaValue.BlackValue;
+      if (floating < 0) return false;
+      if (genericToPay > 0) {
+        var genericPaid = Math.Min(genericToPay, floating);
+        genericToPay -= genericPaid;
+        floating -= genericPaid;
+      }
+      result.BlackValue = (byte)floating;
+
+      floating = pool.RedValue - manaValue.RedValue;
+      if (floating < 0) return false;
+      if (genericToPay > 0) {
+        var genericPaid = Math.Min(genericToPay, floating);
+        genericToPay -= genericPaid;
+        floating -= genericPaid;
+      }
+      result.RedValue = (byte)floating;
+
+      floating = pool.GreenValue - manaValue.GreenValue;
+      if (floating < 0) return false;
+      if (genericToPay > 0) {
+        var genericPaid = Math.Min(genericToPay, floating);
+        genericToPay -= genericPaid;
+        floating -= genericPaid;
+      }
+      result.GreenValue = (byte)floating;
+
+      return genericToPay <= 0;
     }
 
     public static int CreatePermanent(GameState gameState, Card card) {
@@ -297,7 +348,7 @@ namespace AI {
       var card = gameState.Hand[handId];
       gameState.Hand.Remove(handId);
       var stackId = CreateStackItem(gameState, card);
-      return new UndoZoneChange {Card = card, SourceId = handId, DestinationId = stackId};
+      return new UndoZoneChange { Card = card, SourceId = handId, DestinationId = stackId };
     }
   }
 
@@ -358,7 +409,8 @@ namespace AI {
     }
 
     public override void UndoAction(GameState gameState, Action action, ValueType undoState) {
-
+      var undoZoneChange = (UndoZoneChange)undoState;
+      GameStates.MoveFromBattlefieldToHand(gameState, undoZoneChange.DestinationId);
     }
   }
 
