@@ -422,6 +422,12 @@ namespace AI {
       var undoZoneChange = (UndoZoneChange)undoState;
       GameStates.MoveFromBattlefieldToHand(gameState, undoZoneChange.DestinationId);
     }
+
+    public override ValueType Resolve(GameState gameState) {
+      return Empty.Value;
+    }
+
+    public override void Unresolve(GameState gameState, ValueType undoState) { }
   }
 
   public abstract class AbstractSpell : AbstractCard {
@@ -430,6 +436,14 @@ namespace AI {
       if (GameStates.ManaAvailable(gameState, GetPrintedManaCost()) && CanCast(gameState)) {
         actions.Add(new Action { ActionType = ActionType.CastSpell, Source = handId });
       }
+    }
+
+    public override ValueType PerformHandAction(GameState gameState, Action action,
+        int handIndex) {
+      return Empty.Value;
+    }
+
+    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
     }
 
     public abstract bool CanCast(GameState gameState);
@@ -641,12 +655,11 @@ namespace AI {
       }
     }
 
-    public override ValueType PerformHandAction(GameState gameState, Action action,
-      int handIndex) {
+    public override ValueType Resolve(GameState gameState) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
+    public override void Unresolve(GameState gameState, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -660,12 +673,11 @@ namespace AI {
       return new ManaValue { RedValue = 2 };
     }
 
-    public override ValueType PerformHandAction(GameState gameState, Action action,
-        int handIndex) {
+    public override ValueType Resolve(GameState gameState) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
+    public override void Unresolve(GameState gameState, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -679,12 +691,11 @@ namespace AI {
       return new ManaValue { RedValue = 1, GenericValue = 1 };
     }
 
-    public override ValueType PerformHandAction(GameState gameState, Action action,
-        int handIndex) {
+    public override ValueType Resolve(GameState gameState) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
+    public override void Unresolve(GameState gameState, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
@@ -710,12 +721,11 @@ namespace AI {
       return true;
     }
 
-    public override ValueType PerformHandAction(GameState gameState, Action action,
-        int handIndex) {
+    public override ValueType Resolve(GameState gameState) {
       throw new System.NotImplementedException();
     }
 
-    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
+    public override void Unresolve(GameState gameState, ValueType undoState) {
       throw new System.NotImplementedException();
     }
   }
