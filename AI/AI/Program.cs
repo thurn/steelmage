@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace AI {
   public static class Empty {
@@ -245,6 +246,17 @@ namespace AI {
       return gameState.GameStatus == GameStatus.OpponentDeclareBlockers;
     }
 
+    public static void AddToManaPool(GameState gameState, ManaValue value) {
+      gameState.ManaPool = new ManaValue {
+        WhiteValue = (byte)(gameState.ManaPool.WhiteValue + value.WhiteValue),
+        BlueValue = (byte)(gameState.ManaPool.BlueValue + value.BlueValue),
+        BlackValue = (byte)(gameState.ManaPool.BlackValue + value.BlackValue),
+        RedValue = (byte)(gameState.ManaPool.RedValue + value.RedValue),
+        GreenValue = (byte)(gameState.ManaPool.GreenValue + value.GreenValue),
+        GenericValue = (byte)(gameState.ManaPool.WhiteValue + value.GenericValue),
+      };
+    }
+
     public static bool ManaAvailable(GameState gameState, ManaValue manaValue,
         out ManaValue result) {
       result = new ManaValue { Absent = true };
@@ -357,6 +369,18 @@ namespace AI {
       var stackId = CreateStackItem(gameState, card);
       return new UndoZoneChange { Card = card, SourceId = handId, DestinationId = stackId };
     }
+
+    public static UndoZoneChange MoveFromTopOfStackToHand(GameState gameState) {
+      var stackItem = gameState.Stack[gameState.Stack.Count - 1];
+      gameState.Stack.RemoveAt(gameState.Stack.Count - 1);
+      var newId = gameState.NextId++;
+      gameState.Hand.Add(newId, stackItem.Source);
+      return new UndoZoneChange {
+        Card = stackItem.Source,
+        SourceId = stackItem.Id,
+        DestinationId = newId
+      };
+    }
   }
 
   public abstract class AbstractCard {
@@ -439,11 +463,23 @@ namespace AI {
     }
 
     public override ValueType PerformHandAction(GameState gameState, Action action,
-        int handIndex) {
+        int handId) {
+      if (action.ActionType == ActionType.CastSpell && action.ActionChoices.Equals(Empty.Value)) {
+        var oldManaPool = gameState.ManaPool;
+        ManaValue newManaPool;
+        GameStates.ManaAvailable(gameState, GetPrintedManaCost(), out newManaPool);
+        gameState.ManaPool = newManaPool;
+        GameStates.MoveFromHandToStack(gameState, handId);
+        return oldManaPool;
+      }
       return Empty.Value;
     }
 
     public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
+      if (action.ActionType == ActionType.CastSpell && action.ActionChoices.Equals(Empty.Value)) {
+        gameState.ManaPool = (ManaValue)undoState;
+        GameStates.MoveFromTopOfStackToHand(gameState);
+      }
     }
 
     public abstract bool CanCast(GameState gameState);
