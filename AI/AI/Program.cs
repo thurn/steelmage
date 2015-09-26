@@ -139,6 +139,8 @@ namespace AI {
     public Dictionary<int, Card> Hand;
     public ManaValue ManaPool;
     public Dictionary<int, Permanent> Permanents;
+    public HashSet<int> AttackingCreatures;
+    public Dictionary<int, int> BlockingCreatures;
     public List<StackItem> Stack;
     public List<Card> Library;
     public HashSet<Card> Decklist;
@@ -412,7 +414,7 @@ namespace AI {
       return Empty.Value;
     }
 
-    public virtual void UndoPermanentAction(GameState gameState, Action action) { }
+    public virtual void UndoPermanentAction(GameState gameState, Action action, int permanentId) { }
 
     public abstract ValueType PerformHandAction(GameState gameState, Action action, int handId);
     public abstract void UndoHandAction(GameState gameState, Action action, ValueType undoState);
@@ -482,11 +484,11 @@ namespace AI {
       }
     }
 
-    public abstract bool CanCast(GameState gameState);
+    protected abstract bool CanCast(GameState gameState);
   }
 
   public abstract class AbstractInstant : AbstractSpell {
-    public override bool CanCast(GameState gameState) {
+    protected override bool CanCast(GameState gameState) {
       return true;
     }
 
@@ -496,7 +498,7 @@ namespace AI {
   }
 
   public abstract class AbstractSorcery : AbstractSpell {
-    public override bool CanCast(GameState gameState) {
+    protected override bool CanCast(GameState gameState) {
       return GameStates.CouldPlaySorcery(gameState);
     }
 
@@ -509,7 +511,7 @@ namespace AI {
     public abstract override PowerAndToughness GetPrintedPowerAndToughness();
     public abstract override HashSet<CardSubtype> GetCardSubtypes();
 
-    public override bool CanCast(GameState gameState) {
+    protected override bool CanCast(GameState gameState) {
       return GameStates.CouldPlaySorcery(gameState);
     }
 
@@ -525,7 +527,37 @@ namespace AI {
       }
 
       if (GameStates.CouldDeclareBlocks(gameState) && !permanent.Tapped) {
-        actions.Add(new Action { ActionType = ActionType.DeclareAsBlocker, Source = permanent.Id });
+        foreach (var attacker in gameState.AttackingCreatures) {
+          actions.Add(new Action {
+            ActionType = ActionType.DeclareAsBlocker,
+            Source = permanent.Id,
+            ActionChoices = attacker
+          });
+        }
+      }
+    }
+
+    public override ValueType PerformPermanentAction(GameState gameState, Action action,
+      Permanent permanent) {
+      switch (action.ActionType) {
+        case ActionType.DeclareAsAttacker:
+          gameState.AttackingCreatures.Add(permanent.Id);
+          break;
+        case ActionType.DeclareAsBlocker:
+          gameState.BlockingCreatures.Add(permanent.Id, (int)action.ActionChoices);
+          break;
+      }
+      return Empty.Value;
+    }
+
+    public override void UndoPermanentAction(GameState gameState, Action action, int permanentId) {
+      switch (action.ActionType) {
+        case ActionType.DeclareAsAttacker:
+          gameState.AttackingCreatures.Remove(permanentId);
+          break;
+        case ActionType.DeclareAsBlocker:
+          gameState.BlockingCreatures.Remove(permanentId);
+          break;
       }
     }
 
