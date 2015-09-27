@@ -109,6 +109,7 @@ namespace AI {
     PlayLand,
     CastSpell,
     TapLandForMana,
+    Choice,
     ActivateAbility,
     DeclareAsAttacker,
     DeclareAsBlocker
@@ -128,9 +129,31 @@ namespace AI {
     public bool ControlledSinceStartOfTurn;
   }
 
+  public enum TriggerType {
+    BeginningOfUpkeep,
+    EnterBattlefield,
+    CastSpell,
+    CreatureAttacks,
+  }
+
+
   public struct StackItem {
     public int Id;
     public Card Source;
+  }
+
+  public class Library {
+    public void RemoveCard(Card card) {
+
+    }
+
+    public bool ContainsCard(Card card) {
+      return true;
+    }
+
+    public Card GetRandomCard() {
+      return Card.WoodedFoothills;
+    }
   }
 
   public class GameState {
@@ -142,8 +165,8 @@ namespace AI {
     public HashSet<int> AttackingCreatures;
     public Dictionary<int, int> BlockingCreatures;
     public List<StackItem> Stack;
-    public List<Card> Library;
-    public HashSet<Card> Decklist;
+    public Library Library;
+    public byte LibrarySize;
     public byte LifeTotal;
     public byte OpponentLifeTotal;
     public byte LandPlaysThisTurn;
@@ -246,6 +269,17 @@ namespace AI {
 
     public static bool CouldDeclareBlocks(GameState gameState) {
       return gameState.GameStatus == GameStatus.OpponentDeclareBlockers;
+    }
+
+    public static void AddManaOfColorToPool(GameState gameState, Color color, byte quantity) {
+      AddToManaPool(gameState, new ManaValue {
+        WhiteValue = color == Color.White ? quantity : (byte)0,
+        BlueValue = color == Color.Blue ? quantity : (byte)0,
+        BlackValue = color == Color.Black ? quantity : (byte)0,
+        RedValue = color == Color.Red ? quantity : (byte)0,
+        GreenValue = color == Color.Green ? quantity : (byte)0,
+        GenericValue = color == Color.Colorless ? quantity : (byte)0
+      });
     }
 
     public static void AddToManaPool(GameState gameState, ManaValue value) {
@@ -405,19 +439,25 @@ namespace AI {
 
     public abstract void PopulateHandActions(GameState gameState, ICollection<Action> actions,
         int handId);
+    public abstract ValueType PerformHandAction(GameState gameState, Action action, int handId);
+    public abstract void UndoHandAction(GameState gameState, Action action, ValueType undoState);
 
     public virtual void PopulatePermanentActions(GameState gameState, Permanent permanent,
         ICollection<Action> actions) { }
-
     public virtual ValueType PerformPermanentAction(GameState gameState, Action action,
       Permanent permanent) {
       return Empty.Value;
     }
+    public virtual void UndoPermanentAction(GameState gameState, Action action, int permanentId,
+        ValueType undoState) { }
 
-    public virtual void UndoPermanentAction(GameState gameState, Action action, int permanentId) { }
-
-    public abstract ValueType PerformHandAction(GameState gameState, Action action, int handId);
-    public abstract void UndoHandAction(GameState gameState, Action action, ValueType undoState);
+    public virtual void PopulateTriggerActions(GameState gameState, ICollection<Action> actions,
+        TriggerType triggerType, int sourceId) { }
+    public virtual ValueType PerformTriggerAction(GameState gameState, Action action,
+        int sourceId) {
+      return Empty.Value;
+    }
+    public virtual void UndoTriggerAction(GameState gameState, Action action, int sourceId) { }
 
     public abstract ValueType Resolve(GameState gameState);
     public abstract void Unresolve(GameState gameState, ValueType undoState);
@@ -550,7 +590,8 @@ namespace AI {
       return Empty.Value;
     }
 
-    public override void UndoPermanentAction(GameState gameState, Action action, int permanentId) {
+    public override void UndoPermanentAction(GameState gameState, Action action, int permanentId,
+        ValueType undoState) {
       switch (action.ActionType) {
         case ActionType.DeclareAsAttacker:
           gameState.AttackingCreatures.Remove(permanentId);
@@ -585,6 +626,24 @@ namespace AI {
         ActionType = ActionType.TapLandForMana
       });
     }
+
+    public override ValueType PerformPermanentAction(GameState gameState, Action action,
+      Permanent permanent) {
+      if (action.ActionType == ActionType.TapLandForMana) {
+        var oldManaPool = gameState.ManaPool;
+        var color = BasicLandColorsRegistry.BasicLandColors[_type];
+        GameStates.AddManaOfColorToPool(gameState, color, 1);
+        return oldManaPool;
+      }
+      return Empty.Value;
+    }
+
+    public override void UndoPermanentAction(GameState gameState, Action action, int permanentId,
+        ValueType undoState) {
+      if (action.ActionType == ActionType.TapLandForMana) {
+        gameState.ManaPool = (ManaValue)undoState;
+      }
+    }
   }
 
   public abstract class AbstractFetchland : AbstractLand {
@@ -602,7 +661,7 @@ namespace AI {
       var fetchableCards = BasicLandTypesRegistry.BasicLandTypeCards[_first].Union(
           BasicLandTypesRegistry.BasicLandTypeCards[_second]);
       foreach (var card in fetchableCards) {
-        if (gameState.Decklist.Contains(card)) {
+        if (gameState.Library.ContainsCard(card)) {
           actions.Add(new Action {
             Source = permanent.Id,
             ActionType = ActionType.ActivateAbility,
@@ -612,8 +671,17 @@ namespace AI {
       }
     }
 
-    public override void UndoHandAction(GameState gameState, Action action, ValueType undoState) {
-      throw new System.NotImplementedException();
+    public override ValueType PerformPermanentAction(GameState gameState, Action action,
+      Permanent permanent) {
+      gameState.LifeTotal--;
+      var card = (Card)action.ActionChoices;
+      gameState.Library.RemoveCard(card);
+      GameStates.CreatePermanent(gameState, card);
+      return Empty.Value;
+    }
+
+    public override void UndoPermanentAction(GameState gameState, Action action, int permanentId,
+        ValueType undoState) {
     }
   }
 
@@ -631,17 +699,17 @@ namespace AI {
       _second = second;
     }
 
-    public override void PopulateHandActions(GameState gameState, ICollection<Action> actions,
-        int handId) {
-      if (!GameStates.CouldPlayLand(gameState)) return;
+    public override void PopulateTriggerActions(GameState gameState, ICollection<Action> actions,
+      TriggerType triggerType, int sourceId) {
+      if (triggerType != TriggerType.EnterBattlefield) return;
       actions.Add(new Action {
-        ActionType = ActionType.PlayLand,
-        Source = handId,
+        ActionType = ActionType.Choice,
+        Source = sourceId,
         ActionChoices = Choice.Shock
       });
       actions.Add(new Action {
-        ActionType = ActionType.PlayLand,
-        Source = handId,
+        ActionType = ActionType.Choice,
+        Source = sourceId,
         ActionChoices = Choice.DontShock
       });
     }

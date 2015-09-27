@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEditorInternal;
-using UnityEngine;
+﻿using UnityEngine;
 
 enum GladiatorState {
   Walking,
@@ -33,7 +31,7 @@ public class Gladiator : MonoBehaviour {
       _animation.CrossFade(_running ? "guns_idle" : "walk_loop");
       _running = !_running;
     }
-
+    
     if (Input.GetKeyDown(KeyCode.Mouse0)) {
       _animation.CrossFade("shot_rifle");
     }
