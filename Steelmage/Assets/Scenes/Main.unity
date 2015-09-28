@@ -2963,7 +2963,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 1753775894}
   - 114: {fileID: 1753775896}
-  - 111: {fileID: 1753775895}
   m_Layer: 0
   m_Name: gladiator1
   m_TagString: Untagged
@@ -2988,26 +2987,6 @@ Transform:
   - {fileID: 1671678378}
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!111 &1753775895
-Animation:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1753775893}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Animation: {fileID: 0}
-  m_Animations:
-  - {fileID: 7400050, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  - {fileID: 7400048, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  - {fileID: 7400148, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  - {fileID: 7400150, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  - {fileID: 7400052, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  - {fileID: 7400010, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  m_WrapMode: 0
-  m_PlayAutomatically: 1
-  m_AnimatePhysics: 0
-  m_CullingType: 0
 --- !u!114 &1753775896
 MonoBehaviour:
   m_ObjectHideFlags: 0
