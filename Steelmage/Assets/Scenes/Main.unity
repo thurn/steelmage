@@ -2963,6 +2963,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 1753775894}
   - 114: {fileID: 1753775896}
+  - 111: {fileID: 1753775895}
   m_Layer: 0
   m_Name: gladiator1
   m_TagString: Untagged
@@ -2987,6 +2988,23 @@ Transform:
   - {fileID: 1671678378}
   m_Father: {fileID: 0}
   m_RootOrder: 1
+--- !u!111 &1753775895
+Animation:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1753775893}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 0}
+  m_Animations:
+  - {fileID: 7400000, guid: fce81525634e7ec46a1c635e19b1c0ee, type: 2}
+  - {fileID: 7400000, guid: a4e94da9262e1f14cbca7cf6723a3f5e, type: 2}
+  - {fileID: 7400000, guid: 8e34ab78dc7f9014c80aa93027052dbe, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
 --- !u!114 &1753775896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2999,6 +3017,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GunPosition: {fileID: 657250837}
+  MoveSpeed: 6
+  RotationSpeed: 15
+  TargetDistanceThreshold: 2
+  DecelerationSpeed: 20
 --- !u!1 &1781069488
 GameObject:
   m_ObjectHideFlags: 0
