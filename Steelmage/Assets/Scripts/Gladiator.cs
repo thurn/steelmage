@@ -15,11 +15,12 @@ enum TransitionType {
 [RequireComponent(typeof(Animation))]
 public class Gladiator : MonoBehaviour {
   public Transform GunPosition;
-  public float MoveSpeed = 6.0f;
-  public float RotationSpeed = 15.0f;
+  public float MoveSpeed = 1.0f;
+  public float RotationSpeed = 5.0f;
   // Begin slowing down when closer to the target than this threshold:
-  public float TargetDistanceThreshold = 2.0f;
-  public float DecelerationSpeed = 20.0f;
+  public float TargetDistanceThreshold = 1.0f;
+  public float DecelerationSpeed = 5.0f;
+  public float TerminalSpeed = -20.0f;
 
   private Animation _animation;
   private CharacterController _characterController;
@@ -48,27 +49,35 @@ public class Gladiator : MonoBehaviour {
         if (hitObject.layer == LayerMask.NameToLayer("Ground")) {
           _moveTargetPosition = mouseHit.point;
           _currentSpeed = MoveSpeed;
+          Debug.Log("Clicked ground, moving to " + _moveTargetPosition);
         }
       }
     }
 
     if (_moveTargetPosition != null) {
-      var targetPosition = (Vector3)_moveTargetPosition;
-			var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
-			transform.rotation = Quaternion.Slerp(transform.rotation,
+      var targetPosition = new Vector3(
+          ((Vector3)_moveTargetPosition).x,
+          transform.position.y,
+          ((Vector3)_moveTargetPosition).z);
+      var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+      transform.rotation = Quaternion.Slerp(
+          transform.rotation,
           targetRotation,
           RotationSpeed * Time.deltaTime);
 
-			movement = _currentSpeed * Vector3.forward;
-			movement = transform.TransformDirection(movement);
-			
-			if (Vector3.Distance(targetPosition, transform.position) < TargetDistanceThreshold) {
-				_currentSpeed -= DecelerationSpeed * Time.deltaTime;
-				if (_currentSpeed <= 0) {
-				  _moveTargetPosition = null;
-				}
-			}
+      movement = _currentSpeed * Vector3.forward;
+      movement = transform.TransformDirection(movement);
+
+      if (Vector3.Distance(targetPosition, transform.position) < TargetDistanceThreshold) {
+        _currentSpeed -= DecelerationSpeed * Time.deltaTime;
+        if (_currentSpeed <= 0) {
+          Debug.Log("Arrived");
+          _moveTargetPosition = null;
+        }
+      }
     }
+
+    movement.y = TerminalSpeed;
 
     movement *= Time.deltaTime;
     _characterController.Move(movement);
@@ -78,7 +87,7 @@ public class Gladiator : MonoBehaviour {
       _running = !_running;
     }
 
-    if (Input.GetKeyDown(KeyCode.Mouse0)) {
+    if (Input.GetKeyDown(KeyCode.V)) {
       _animation.CrossFade("shot_rifle");
     }
   }
