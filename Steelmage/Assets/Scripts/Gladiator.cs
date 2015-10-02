@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 enum GladiatorState {
   Walking,
