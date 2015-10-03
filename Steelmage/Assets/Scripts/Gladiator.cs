@@ -15,12 +15,13 @@ enum TransitionType {
 [RequireComponent(typeof(Animation))]
 public class Gladiator : MonoBehaviour {
   public Transform GunPosition;
-  public float MoveSpeed = 1.0f;
-  public float RotationSpeed = 5.0f;
+
+  private const float MoveSpeed = 1.5f;
+  private const float RotationSpeed = 5.0f;
   // Begin slowing down when closer to the target than this threshold:
-  public float TargetDistanceThreshold = 1.0f;
-  public float DecelerationSpeed = 5.0f;
-  public float TerminalSpeed = -20.0f;
+  private const float TargetDistanceThreshold = 0.5f;
+  private const float DecelerationSpeed = 5.0f;
+  private const float TerminalSpeed = -20.0f;
 
   private Animation _animation;
   private CharacterController _characterController;
@@ -49,7 +50,7 @@ public class Gladiator : MonoBehaviour {
         if (hitObject.layer == LayerMask.NameToLayer("Ground")) {
           _moveTargetPosition = mouseHit.point;
           _currentSpeed = MoveSpeed;
-          Debug.Log("Clicked ground, moving to " + _moveTargetPosition);
+          _animation.CrossFade("guns_walk_loop");
         }
       }
     }
@@ -71,7 +72,7 @@ public class Gladiator : MonoBehaviour {
       if (Vector3.Distance(targetPosition, transform.position) < TargetDistanceThreshold) {
         _currentSpeed -= DecelerationSpeed * Time.deltaTime;
         if (_currentSpeed <= 0) {
-          Debug.Log("Arrived");
+          _animation.CrossFade("guns_idle");
           _moveTargetPosition = null;
         }
       }
