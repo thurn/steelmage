@@ -9,7 +9,7 @@ namespace Steelmage {
     }
 
     public void DrawCard() {
-      Debug.Log("Draw Card");
+      Debug.Log("Draw Card " + Screen.width + "x" + Screen.height);
       _animation.Play("drawCard");
     }
   }
