@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class HelloWorld : MonoBehaviour {
-  void Start() {
+  public void Start() {
     Debug.Log("Hello, world");
   }
 }

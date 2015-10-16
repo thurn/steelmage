@@ -3,10 +3,9 @@ using UnityEngine.UI;
 
 namespace Steelmage {
   public class Card : MonoBehaviour {
-    public Sprite CardFront;
-
     private Animation _animation;
     private Image _image;
+    public Sprite CardFront;
 
     public void Awake() {
       _animation = GetComponent<Animation>();
@@ -19,6 +18,6 @@ namespace Steelmage {
 
     public void Draw() {
       _animation.Play("drawCard");
-    }                     
+    }
   }
 }

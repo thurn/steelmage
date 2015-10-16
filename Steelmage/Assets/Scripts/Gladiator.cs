@@ -1,35 +1,33 @@
 using UnityEngine;
 
-enum GladiatorState {
+internal enum GladiatorState {
   Walking,
   Shooting,
   Idle
 }
 
-enum TransitionType {
+internal enum TransitionType {
   Normal,
   Trigger
 }
 
-[RequireComponent(typeof(CharacterController))]
-[RequireComponent(typeof(Animation))]
+[RequireComponent(typeof (CharacterController))]
+[RequireComponent(typeof (Animation))]
 public class Gladiator : MonoBehaviour {
-  public Transform GunPosition;
-
   private const float MoveSpeed = 1.5f;
   private const float RotationSpeed = 5.0f;
   // Begin slowing down when closer to the target than this threshold:
   private const float TargetDistanceThreshold = 0.5f;
   private const float DecelerationSpeed = 5.0f;
   private const float TerminalSpeed = -20.0f;
-
   private Animation _animation;
   private CharacterController _characterController;
-  private bool _running;
-  private Vector3? _moveTargetPosition;
   private float _currentSpeed;
+  private Vector3? _moveTargetPosition;
+  private bool _running;
+  public Transform GunPosition;
 
-  void Start() {
+  public void Start() {
     _animation = GetComponent<Animation>();
     _characterController = GetComponent<CharacterController>();
     _animation.Play("guns_idle");
@@ -39,7 +37,7 @@ public class Gladiator : MonoBehaviour {
     F3DController.Instance.Fire(F3DEffectType.Vulcan, GunPosition);
   }
 
-  void Update() {
+  public void Update() {
     var movement = Vector3.zero;
 
     if (Input.GetMouseButton(0)) {
@@ -49,7 +47,7 @@ public class Gladiator : MonoBehaviour {
         var hitObject = mouseHit.transform.gameObject;
         if (hitObject.layer == LayerMask.NameToLayer("Ground")) {
           _moveTargetPosition = mouseHit.point;
-          _currentSpeed = MoveSpeed;
+          _currentSpeed = Gladiator.MoveSpeed;
           _animation.CrossFade("guns_walk_loop");
         }
       }
@@ -57,20 +55,19 @@ public class Gladiator : MonoBehaviour {
 
     if (_moveTargetPosition != null) {
       var targetPosition = new Vector3(
-          ((Vector3)_moveTargetPosition).x,
-          transform.position.y,
-          ((Vector3)_moveTargetPosition).z);
-      var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
-      transform.rotation = Quaternion.Slerp(
-          transform.rotation,
-          targetRotation,
-          RotationSpeed * Time.deltaTime);
+        ((Vector3) _moveTargetPosition).x,
+        this.transform.position.y,
+        ((Vector3) _moveTargetPosition).z);
+      var targetRotation = Quaternion.LookRotation(targetPosition - this.transform.position);
+      this.transform.rotation = Quaternion.Slerp(this.transform.rotation,
+        targetRotation,
+        Gladiator.RotationSpeed*Time.deltaTime);
 
-      movement = _currentSpeed * Vector3.forward;
-      movement = transform.TransformDirection(movement);
+      movement = _currentSpeed*Vector3.forward;
+      movement = this.transform.TransformDirection(movement);
 
-      if (Vector3.Distance(targetPosition, transform.position) < TargetDistanceThreshold) {
-        _currentSpeed -= DecelerationSpeed * Time.deltaTime;
+      if (Vector3.Distance(targetPosition, this.transform.position) < Gladiator.TargetDistanceThreshold) {
+        _currentSpeed -= Gladiator.DecelerationSpeed*Time.deltaTime;
         if (_currentSpeed <= 0) {
           _animation.CrossFade("guns_idle");
           _moveTargetPosition = null;
@@ -78,7 +75,7 @@ public class Gladiator : MonoBehaviour {
       }
     }
 
-    movement.y = TerminalSpeed;
+    movement.y = Gladiator.TerminalSpeed;
 
     movement *= Time.deltaTime;
     _characterController.Move(movement);
@@ -88,8 +85,6 @@ public class Gladiator : MonoBehaviour {
       _running = !_running;
     }
 
-    if (Input.GetKeyDown(KeyCode.V)) {
-      _animation.CrossFade("shot_rifle");
-    }
+    if (Input.GetKeyDown(KeyCode.V)) _animation.CrossFade("shot_rifle");
   }
 }
