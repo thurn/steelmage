@@ -6,8 +6,9 @@ namespace Steelmage {
     public void Start() {}
 
     public void DrawCard() {
-      var card = Canvas.Instance.InstantiateObject<Card>(CardPrefab, this.transform.position);
+      var card = Canvas.Instance.InstantiateObject<Card>(CardPrefab, transform.position);
       card.Draw();
+      Hand.Instance.AddCard(card);
     }
   }
 }

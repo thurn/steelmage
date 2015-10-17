@@ -2,15 +2,15 @@ using UnityEngine;
 
 namespace Steelmage {
   public class Canvas : MonoBehaviour {
-    private static Canvas s_instance;
+    private static Canvas _instance;
 
     public static Canvas Instance {
-      get { return Canvas.s_instance ?? (Canvas.s_instance = Object.FindObjectOfType<Canvas>()); }
+      get { return _instance ?? (_instance = FindObjectOfType<Canvas>()); }
     }
 
     public T InstantiateObject<T>(Object newObject, Vector3 position) where T : class {
-      var value = (MonoBehaviour)Object.Instantiate(newObject, position, Quaternion.identity);
-      value.transform.SetParent(this.transform, false /* worldPositionStays */);
+      var value = (MonoBehaviour)Instantiate(newObject, position, Quaternion.identity);
+      value.transform.SetParent(transform, false /* worldPositionStays */);
       value.transform.SetAsFirstSibling();
       return value as T;
     }
