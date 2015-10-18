@@ -11,9 +11,9 @@ namespace Steelmage {
     }
 
     public void AddCard(Card card) {
-      foreach (var currentCard in Cards) {
-        LeanTween.moveX(currentCard.gameObject, currentCard.transform.position.x + 80, 0.3f);
-      }
+      //foreach (var currentCard in Cards) {
+      //  LeanTween.moveX(currentCard.gameObject, currentCard.transform.position.x + 80, 0.3f);
+      //}
 
       Cards.Add(card);
     }
