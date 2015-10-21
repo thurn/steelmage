@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 
 namespace Steelmage {
   public class DrawCard : MonoBehaviour {
@@ -15,7 +16,8 @@ namespace Steelmage {
       card.transform.localScale = Vector3.one;
       card.transform.position = deckPosition;
       card.transform.SetAsLastSibling();
-      LeanTween.move(card.gameObject, new Vector2(400, 400), 5.0f);
+      //LeanTween.move(card.gameObject, new Vector2(400, 400), 5.0f);
+      card.transform.DOMove(new Vector2(400, 400), 1.0f);
     }
   }
 }
