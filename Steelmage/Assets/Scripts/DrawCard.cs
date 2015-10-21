@@ -16,8 +16,9 @@ namespace Steelmage {
       card.transform.localScale = Vector3.one;
       card.transform.position = deckPosition;
       card.transform.SetAsLastSibling();
-      //LeanTween.move(card.gameObject, new Vector2(400, 400), 5.0f);
-      card.transform.DOMove(new Vector2(400, 400), 1.0f);
+      DOTween.Sequence()
+        .Append(card.transform.DOMove(new Vector2(0, 100), 0.5f).SetRelative())
+        .Append(card.transform.DOMove(transform.position, 3.0f));
     }
   }
 }
