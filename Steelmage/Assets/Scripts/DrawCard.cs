@@ -23,7 +23,10 @@ namespace Steelmage {
           .Append(card.transform.DOMove(ShowCardPosition.position, 1.0f))
           .Insert(0, card.transform.DOScale(new Vector3(3, 3, 1), 1.0f))
           .Insert(0, card.transform.DORotate(new Vector3(0, 90, 0), 0.5f))
-          .Insert(0.5f, card.transform.DORotate(Vector3.zero, 0.5f)));
+          .Insert(0.5f, card.transform.DORotate(Vector3.zero, 0.5f)))
+        .Append(DOTween.Sequence()
+          .Append(card.transform.DOMove(transform.position, 1.0f))
+          .Insert(0, card.transform.DOScale(Vector3.one, 1.0f)));
     }
   }
 }
