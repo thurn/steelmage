@@ -11,19 +11,21 @@ namespace Steelmage {
       get { return _instance ?? (_instance = FindObjectOfType<DrawCard>()); }
     }
 
-    public void Draw(Vector3 deckPosition) {
+    public void Draw(Vector3 deckPosition, Sprite frontSprite) {
       var card = Instantiate(CardPrefab);
       card.transform.SetParent(transform);
       card.transform.localScale = Vector3.one;
       card.transform.position = deckPosition;
-      card.transform.SetAsLastSibling();
+      card.CardFront = frontSprite;
       DOTween.Sequence()
-        .Append(card.transform.DOMove(new Vector2(0, 100), 0.5f).SetRelative())
+        .Append(card.transform.DOMove(new Vector2(0, 150), 0.5f).SetRelative())
         .Append(DOTween.Sequence()
           .Append(card.transform.DOMove(ShowCardPosition.position, 1.0f))
           .Insert(0, card.transform.DOScale(new Vector3(3, 3, 1), 1.0f))
           .Insert(0, card.transform.DORotate(new Vector3(0, 90, 0), 0.5f))
+          .InsertCallback(0.5f, () => card.Flip())
           .Insert(0.5f, card.transform.DORotate(Vector3.zero, 0.5f)))
+        .AppendInterval(0.5f)
         .Append(DOTween.Sequence()
           .Append(card.transform.DOMove(transform.position, 1.0f))
           .Insert(0, card.transform.DOScale(Vector3.one, 1.0f)));
