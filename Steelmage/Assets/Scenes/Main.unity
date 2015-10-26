@@ -543,6 +543,45 @@ Transform:
   - {fileID: 495014511}
   m_Father: {fileID: 314218373}
   m_RootOrder: 0
+--- !u!1 &165410127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 165410129}
+  - 114: {fileID: 165410128}
+  m_Layer: 0
+  m_Name: Grid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &165410128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 165410127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47baa4721fe78a748b51be6fced12f17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &165410129
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 165410127}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
 --- !u!1 &187931447
 GameObject:
   m_ObjectHideFlags: 0
@@ -4568,7 +4607,6 @@ GameObject:
   - 114: {fileID: 1916207066}
   - 114: {fileID: 1916207065}
   - 114: {fileID: 1916207068}
-  - 114: {fileID: 1916207069}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -4661,18 +4699,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddc9660de94dc914eba09cad8a0d21e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1916207069
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1916207063}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dff565ca59c80047b7f868acfcbe21f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Cards: []
 --- !u!1 &1918058311
 GameObject:
   m_ObjectHideFlags: 0
