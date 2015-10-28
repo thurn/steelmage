@@ -3989,9 +3989,8 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 1753775894}
-  - 114: {fileID: 1753775896}
-  - 111: {fileID: 1753775895}
   - 143: {fileID: 1753775897}
+  - 95: {fileID: 1753775895}
   m_Layer: 0
   m_Name: gladiator1
   m_TagString: Untagged
@@ -4016,35 +4015,23 @@ Transform:
   - {fileID: 1671678378}
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!111 &1753775895
-Animation:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1753775893}
-  m_Enabled: 1
+--- !u!95 &1753775895
+Animator:
   serializedVersion: 3
-  m_Animation: {fileID: 0}
-  m_Animations:
-  - {fileID: 7400000, guid: fce81525634e7ec46a1c635e19b1c0ee, type: 2}
-  - {fileID: 7400000, guid: a4e94da9262e1f14cbca7cf6723a3f5e, type: 2}
-  - {fileID: 7400000, guid: 8e34ab78dc7f9014c80aa93027052dbe, type: 2}
-  m_WrapMode: 0
-  m_PlayAutomatically: 1
-  m_AnimatePhysics: 0
-  m_CullingType: 0
---- !u!114 &1753775896
-MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1753775893}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a9783975ad53dd4bb675752fa589a7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GunPosition: {fileID: 657250837}
+  m_Avatar: {fileID: 9000000, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
+  m_Controller: {fileID: 9100000, guid: a51b8711facba8d4aa56b8b396b1bc0e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!143 &1753775897
 CharacterController:
   m_ObjectHideFlags: 0

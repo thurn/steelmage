@@ -13,7 +13,6 @@ internal enum TransitionType {
 }
 
 [RequireComponent(typeof (CharacterController))]
-[RequireComponent(typeof (Animation))]
 public class Gladiator : MonoBehaviour {
   private const float MoveSpeed = 1.5f;
   private const float RotationSpeed = 5.0f;
