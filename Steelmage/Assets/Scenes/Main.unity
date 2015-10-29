@@ -3990,7 +3990,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 1753775894}
   - 143: {fileID: 1753775897}
-  - 95: {fileID: 1753775895}
   m_Layer: 0
   m_Name: gladiator1
   m_TagString: Untagged
@@ -4015,23 +4014,6 @@ Transform:
   - {fileID: 1671678378}
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!95 &1753775895
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1753775893}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
-  m_Controller: {fileID: 9100000, guid: a51b8711facba8d4aa56b8b396b1bc0e, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 1
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!143 &1753775897
 CharacterController:
   m_ObjectHideFlags: 0
@@ -5313,6 +5295,8 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 2088705950}
+  - 95: {fileID: 2088705951}
+  - 114: {fileID: 2088705952}
   m_Layer: 0
   m_Name: gladiator2
   m_TagString: Untagged
@@ -5337,6 +5321,34 @@ Transform:
   - {fileID: 896239791}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+--- !u!95 &2088705951
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2088705949}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 6439ca9e73e44414da70b75e540b0006, type: 3}
+  m_Controller: {fileID: 9100000, guid: a51b8711facba8d4aa56b8b396b1bc0e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &2088705952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2088705949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2effd218b194f81429dd15a64900baa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2092746238
 Prefab:
   m_ObjectHideFlags: 0
