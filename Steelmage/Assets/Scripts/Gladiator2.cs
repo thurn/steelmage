@@ -12,5 +12,8 @@ public class Gladiator2 : MonoBehaviour {
     if (Input.GetKeyDown(KeyCode.V)) {
       _animator.SetTrigger("Walk");
     }
+    if (Input.GetKeyDown(KeyCode.B)) {
+      _animator.SetTrigger("Cast");
+    }
   }
 }
