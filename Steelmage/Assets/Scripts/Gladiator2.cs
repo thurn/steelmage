@@ -1,19 +1,25 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Gladiator2 : MonoBehaviour {
   private Animator _animator;
 
-  void Start() {
+  public void Start() {
     _animator = GetComponent<Animator>();
   }
 
-  void Update() {
+  public void Update() {
     if (Input.GetKeyDown(KeyCode.V)) {
       _animator.SetTrigger("Walk");
-    }
-    if (Input.GetKeyDown(KeyCode.B)) {
+    } else if (Input.GetKeyDown(KeyCode.B)) {
       _animator.SetTrigger("Cast");
+    } else if (Input.GetKeyDown(KeyCode.N)) {
+      _animator.SetTrigger("Draw");
+    } else if (Input.GetKeyDown(KeyCode.M)) {
+      _animator.SetTrigger("Shoot");
     }
+  }
+
+  public void DrawWeapon() {
+    Debug.Log("Draw");
   }
 }
