@@ -30,6 +30,10 @@ public class Gladiator2 : MonoBehaviour {
     }
   }
 
+  public void DrawWeapon() {
+    Debug.Log("Draw Weapon");
+  }
+
   public void FireRifle() {
     Debug.Log("Fire Rifle");
   }
