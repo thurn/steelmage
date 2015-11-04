@@ -5296,7 +5296,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 2088705950}
   - 114: {fileID: 2088705952}
-  - 111: {fileID: 2088705953}
   - 95: {fileID: 2088705954}
   - 114: {fileID: 2088705951}
   m_Layer: 0
@@ -5345,21 +5344,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2effd218b194f81429dd15a64900baa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!111 &2088705953
-Animation:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2088705949}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 8e34ab78dc7f9014c80aa93027052dbe, type: 2}
-  m_Animations:
-  - {fileID: 7400000, guid: 8e34ab78dc7f9014c80aa93027052dbe, type: 2}
-  m_WrapMode: 0
-  m_PlayAutomatically: 0
-  m_AnimatePhysics: 0
-  m_CullingType: 0
 --- !u!95 &2088705954
 Animator:
   serializedVersion: 3
