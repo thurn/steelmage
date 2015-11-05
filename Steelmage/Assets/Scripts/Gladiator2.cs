@@ -2,6 +2,7 @@
 
 public class Gladiator2 : MonoBehaviour {
   private Animator _animator;
+  public SkinnedMeshRenderer Rifle;
 
   public void Start() {
     _animator = GetComponent<Animator>();
@@ -23,6 +24,7 @@ public class Gladiator2 : MonoBehaviour {
 
   public void DrawWeapon() {
     Debug.Log("Draw Weapon");
+    Rifle.enabled = true;
   }
 
   public void FireRifle() {
