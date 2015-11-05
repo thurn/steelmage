@@ -19,12 +19,18 @@ public class Gladiator2 : MonoBehaviour {
       _animator.SetTrigger("Idle");
     } else if (Input.GetKeyDown(KeyCode.M)) {
       _animator.SetTrigger("Shoot");
+    } else if (Input.GetKeyDown(KeyCode.H)) {
+      _animator.SetTrigger("Holster");
     }
   }
 
   public void DrawWeapon() {
     Debug.Log("Draw Weapon");
     Rifle.enabled = true;
+  }
+
+  public void HolsterWeapon() {
+    Rifle.enabled = false;
   }
 
   public void FireRifle() {
