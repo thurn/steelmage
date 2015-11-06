@@ -3,6 +3,7 @@
 public class Gladiator2 : MonoBehaviour {
   private Animator _animator;
   public SkinnedMeshRenderer Rifle;
+  public Transform RifleMuzzle;
 
   public void Start() {
     _animator = GetComponent<Animator>();
@@ -34,6 +35,6 @@ public class Gladiator2 : MonoBehaviour {
   }
 
   public void FireRifle() {
-    Debug.Log("Fire Rifle");
+    F3DController.Instance.Fire(F3DEffectType.Vulcan, RifleMuzzle);
   }
 }
