@@ -534,45 +534,6 @@ Transform:
   - {fileID: 495014511}
   m_Father: {fileID: 314218373}
   m_RootOrder: 0
---- !u!1 &165410127
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 165410129}
-  - 114: {fileID: 165410128}
-  m_Layer: 0
-  m_Name: Grid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &165410128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 165410127}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47baa4721fe78a748b51be6fced12f17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &165410129
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 165410127}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1794598674}
-  m_RootOrder: 0
 --- !u!1 &187931447
 GameObject:
   m_ObjectHideFlags: 0
@@ -812,7 +773,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1c9a0799c230a4007bade55720faba3b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.43061519
+      value: 3.43118668
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 1c9a0799c230a4007bade55720faba3b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2311,6 +2272,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 1024147531}
   - 114: {fileID: 1024147530}
+  - 114: {fileID: 1024147532}
   m_Layer: 0
   m_Name: GameGrid
   m_TagString: Untagged
@@ -3617,6 +3579,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
+--- !u!114 &1024147532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1024147529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdfcc9593ddc40143b9d6d98615e449c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1030330414
 GameObject:
   m_ObjectHideFlags: 0
@@ -6787,33 +6760,6 @@ MonoBehaviour:
   automaticallySnapToGridInEditor: 1
   snapOffsetDistance: 0
   occupiesCell: 1
---- !u!1 &1509961209
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 1509961210}
-  m_Layer: 8
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1509961210
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1509961209}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 1794598674}
-  m_RootOrder: 1
 --- !u!1 &1512252661
 GameObject:
   m_ObjectHideFlags: 0
@@ -7175,15 +7121,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 400000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.35188389
+      value: 13.3518839
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.43061304
+      value: 3.43060875
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 9.54937553
+      value: 20.5493755
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_LocalRotation.x
@@ -7203,7 +7149,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_RootOrder
-      value: 12
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: 83c69a631406c423a978a9e11459c989, type: 3}
       propertyPath: m_Layer
@@ -7366,6 +7312,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 1753775894}
   - 143: {fileID: 1753775897}
+  - 114: {fileID: 1753775895}
   m_Layer: 0
   m_Name: gladiator1
   m_TagString: Untagged
@@ -7380,7 +7327,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1753775893}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.22000027, y: 0, z: -12.6499996}
+  m_LocalPosition: {x: 10, y: -.000567337265, z: -12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 823894663}
@@ -7391,6 +7338,20 @@ Transform:
   - {fileID: 1671678378}
   m_Father: {fileID: 0}
   m_RootOrder: 2
+--- !u!114 &1753775895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1753775893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91b1b112d5c247346979e5fcae9b6257, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  automaticallySnapToGridInEditor: 1
+  snapOffsetDistance: 0
+  occupiesCell: 1
 --- !u!143 &1753775897
 CharacterController:
   m_ObjectHideFlags: 0
@@ -8580,7 +8541,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: a1cf1c456f076419c984d97b70af6bbc, type: 3}
       propertyPath: m_RootOrder
-      value: 15
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: a1cf1c456f076419c984d97b70af6bbc, type: 3}
       propertyPath: m_Layer
@@ -8651,17 +8612,17 @@ Transform:
   - {fileID: 395179375}
   - {fileID: 395600612}
   - {fileID: 654805593}
+  - {fileID: 1672773412}
   - {fileID: 974933477}
   - {fileID: 1169464766}
   - {fileID: 1415133727}
-  - {fileID: 1672773412}
-  - {fileID: 1728754941}
-  - {fileID: 1786045383}
   - {fileID: 1794598674}
+  - {fileID: 1786045383}
+  - {fileID: 1728754941}
+  - {fileID: 2040951187}
+  - {fileID: 2007722721}
   - {fileID: 1818585215}
   - {fileID: 1991629656}
-  - {fileID: 2007722721}
-  - {fileID: 2040951187}
   - {fileID: 419612092}
   - {fileID: 2092746239}
   m_Father: {fileID: 0}
@@ -10415,15 +10376,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 400000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.35188389
+      value: 5.35188389
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.43061256
+      value: 3.43060946
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 11.5493755
+      value: 16.5493755
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_LocalRotation.x
@@ -10443,7 +10404,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_RootOrder
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: 90d95c0e06b9c4906895d40e2e19427d, type: 3}
       propertyPath: m_Layer
@@ -10638,6 +10599,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 2088705950}
+  - 114: {fileID: 2088705951}
   m_Layer: 0
   m_Name: gladiator2
   m_TagString: Untagged
@@ -10652,7 +10614,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2088705949}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.98000002, y: 0, z: -12.6700001}
+  m_LocalPosition: {x: 6, y: -.000567741168, z: -12}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1210591947}
@@ -10662,6 +10624,20 @@ Transform:
   - {fileID: 896239791}
   m_Father: {fileID: 0}
   m_RootOrder: 1
+--- !u!114 &2088705951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2088705949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91b1b112d5c247346979e5fcae9b6257, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  automaticallySnapToGridInEditor: 1
+  snapOffsetDistance: 0
+  occupiesCell: 1
 --- !u!1001 &2092746238
 Prefab:
   m_ObjectHideFlags: 0
