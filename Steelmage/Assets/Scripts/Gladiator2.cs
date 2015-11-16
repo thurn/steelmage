@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class Gladiator2 : MonoBehaviour {
   private Animator _animator;
