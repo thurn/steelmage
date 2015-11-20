@@ -20,8 +20,11 @@ namespace Steelmage {
             new Vector3(cell.MinPoint3D.x, cell.MinPoint3D.y, cell.MaxPoint3D.z),
             new Vector3(cell.MinPoint3D.x, cell.MinPoint3D.y, cell.MinPoint3D.z)
           };
+
+          var color = new Color(1.0f, 1.0f, 1.0f, 0.15f);
+
           var points = new VectorLine("Points", pointArray, null, 2.0f, LineType.Continuous) {
-              color = new Color(1.0f, 1.0f, 1.0f, 0.15f)
+              color = color
           };
           points.Draw3DAuto();
         }
