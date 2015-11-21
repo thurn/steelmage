@@ -23,7 +23,7 @@ namespace Steelmage {
 
           var color = new Color(1.0f, 1.0f, 1.0f, 0.15f);
 
-          var points = new VectorLine("Points", pointArray, null, 2.0f, LineType.Continuous) {
+          var points = new VectorLine("Points", pointArray, null, 3.0f, LineType.Continuous) {
               color = color
           };
           points.Draw3DAuto();
