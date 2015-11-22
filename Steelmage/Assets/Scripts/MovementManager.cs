@@ -23,12 +23,11 @@ namespace Steelmage {
           VectorLine.Destroy(_lines);
           var path = GGAStar.GetPath(_selectionManager.SelectedGridObject.Cell,
             cell, false);
-          Debug.Log("Path length " + path.Count);
-          foreach (var pathCell in path) {
-            var line = new VectorLine("path", new Vector3[60], null, 2.0f, LineType.Continuous) {
-              color = pathCell.IsPathable ? Color.yellow : Color.red
+          for (var i = 0; i < path.Count - 1; ++i) {
+            var points = new[] {path[i].CenterPoint3D, path[i+1].CenterPoint3D};
+            var line = new VectorLine("path", points, null, 2.0f, LineType.Continuous) {
+              color = Color.yellow
             };
-            line.MakeCircle(pathCell.CenterPoint3D, Vector3.up, 1.0f);
             line.Draw3DAuto();
             _lines.Add(line);
           }
