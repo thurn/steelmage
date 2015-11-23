@@ -1,38 +1,40 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using Vectrosity;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
-namespace Steelmage {
-  public class MovementManager : MonoBehaviour {
-    private GGCell _hoverCell;
-    //private VectorLine _line;
-    private List<VectorLine> _lines;
-    private SelectionManager _selectionManager;
-    public GGGrid Grid;
-    // Use this for initialization
-    void Start() {
-      _lines = new List<VectorLine>();
-      _selectionManager = GetComponent<SelectionManager>();
-    }
+public class MovementManager : MonoBehaviour {
+  public GGObject GridObject;
+  private List<GGCell> _currentPath;
+  private GGCell _currentTarget;
 
-    void Update() {
+  // Use this for initialization
+  void Start() {
+
+  }
+
+  // Update is called once per frame
+  void Update() {
+    if (Input.GetMouseButtonDown(0)) {
       var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
       var cell = GGGrid.GetCellFromRay(ray, 1000f);
-      if (!ReferenceEquals(cell, _hoverCell)) {
-        if (cell != null && _selectionManager.SelectedGridObject != null) {
-          VectorLine.Destroy(_lines);
-          var path = GGAStar.GetPath(_selectionManager.SelectedGridObject.Cell,
-            cell, false);
-          for (var i = 0; i < path.Count - 1; ++i) {
-            var points = new[] {path[i].CenterPoint3D, path[i+1].CenterPoint3D};
-            var line = new VectorLine("path", points, null, 2.0f, LineType.Continuous) {
-              color = Color.yellow
-            };
-            line.Draw3DAuto();
-            _lines.Add(line);
-          }
-        }
-        _hoverCell = cell;
+      _currentPath = GGAStar.GetPath(GridObject.Cell, cell, false);
+      _currentTarget = null;
+      if (_currentPath.Count > 0) {
+        // Remove start position from path
+        _currentPath.RemoveAt(0);
+      }
+    }
+
+    if (_currentTarget != null) {
+      var target = _currentTarget.CenterPoint3D;
+      var targetRotation = Quaternion.LookRotation(target - GridObject.transform.position);
+      GridObject.transform.rotation = Quaternion.Lerp(GridObject.transform.rotation, targetRotation, Time.deltaTime * 3.0f);
+    } else if (_currentPath != null) {
+      _currentTarget = _currentPath[0];
+      Debug.Log("New target: " + _currentTarget.CenterPoint3D);
+      Debug.Log("Current Position " + GridObject.transform.position);
+      _currentPath.RemoveAt(0);
+      if (_currentPath.Count == 0) {
+        _currentPath = null;
       }
     }
   }
