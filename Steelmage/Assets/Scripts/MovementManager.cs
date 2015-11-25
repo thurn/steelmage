@@ -50,32 +50,42 @@ namespace Steelmage {
           var targetRotation = Quaternion.LookRotation(_currentTarget.CenterPoint3D - GridObject.transform.position);
           GridObject.transform.rotation = Quaternion.Lerp(GridObject.transform.rotation, targetRotation, Time.deltaTime * Walk90Nudge);
         }
-      }
-      else if (_currentPath != null) {
+
+        if ((GridObject.transform.position - _currentTarget.CenterPoint3D).magnitude < 0.1f) {
+          Debug.Log("Reached target: " + _currentTarget.CenterPoint3D);
+          _currentTarget = null;
+        }
+      } else if (_currentPath != null) {
         _currentTarget = _currentPath[0];
-        var target = _currentTarget.CenterPoint3D;
-        var targetRotation = Quaternion.LookRotation(target - GridObject.transform.position);
-        var angle = Mathf.Abs(targetRotation.eulerAngles.y)%360;
+        var targetRotation = Quaternion.LookRotation(_currentTarget.CenterPoint3D - GridObject.transform.position);
+        var angle = (360 + targetRotation.eulerAngles.y - GridObject.transform.rotation.eulerAngles.y)%360;
+        Debug.Log("angle " + angle);
 
         if (angle < 45 || angle >= 315) {
+          Debug.Log("Walk Start Trigger");
           _animator.SetTrigger("WalkStart");
           _currentTurn = TurnType.WalkForward;
         }
         else if (angle < 135) {
+          Debug.Log("Walk Right Trigger");
           _animator.SetTrigger("Walk90RightStart");
           _currentTurn = TurnType.Walk90Right;
         }
         else if (angle < 225) {
+          Debug.Log("Walk 180 Trigger");
           _animator.SetTrigger("Walk180Start");
           _currentTurn = TurnType.Walk180;
         }
         else if (angle < 315) {
+          Debug.Log("Walk Left Trigger");
           _animator.SetTrigger("Walk90LeftStart");
           _currentTurn = TurnType.Walk90Left;
         }
 
         _currentPath.RemoveAt(0);
-        if (_currentPath.Count == 0) _currentPath = null;
+        if (_currentPath.Count == 0) {
+          _currentPath = null;
+        }
       }
     }
   }
