@@ -11,10 +11,18 @@ public class NavigationManager : MonoBehaviour {
     _agent = GetComponent<NavMeshAgent>();
     _animator = GetComponent<Animator>();
     _agent.updatePosition = false;
-    _agent.SetDestination(Target.position);
   }
 
   private void Update() {
+    if (Input.GetKeyDown(KeyCode.P)) {
+      _animator.SetTrigger("WalkStart");
+      _agent.SetDestination(Target.position);
+      _animator.SetFloat("vely", 1.0f);
+      Debug.Log("WalkStart");
+    }
+
+    return;
+ 
     var worldDeltaPosition = _agent.nextPosition - transform.position;
 
     // Map "worldDeltaPosition" to local space
@@ -33,7 +41,8 @@ public class NavigationManager : MonoBehaviour {
     var shouldMove = _velocity.magnitude > 0.5f && _agent.remainingDistance > _agent.radius;
 
     _animator.SetBool("move", shouldMove);
-    _animator.SetFloat("velX", _velocity.x);
-    _animator.SetFloat("velY", _velocity.y);
+    _animator.SetFloat("velx", _velocity.x);
+    _animator.SetFloat("vely", _velocity.y);
+    Debug.Log("magnitude? " + _velocity.magnitude + " distance " + _agent.remainingDistance + " velocity " + _velocity);
   }
 }
