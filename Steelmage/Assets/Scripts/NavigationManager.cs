@@ -21,8 +21,6 @@ public class NavigationManager : MonoBehaviour {
       Debug.Log("WalkStart");
     }
 
-    return;
- 
     var worldDeltaPosition = _agent.nextPosition - transform.position;
 
     // Map "worldDeltaPosition" to local space
@@ -39,7 +37,7 @@ public class NavigationManager : MonoBehaviour {
       _velocity = _smoothDeltaPosition/Time.deltaTime;
     }
     var shouldMove = _velocity.magnitude > 0.5f && _agent.remainingDistance > _agent.radius;
-
+ 
     _animator.SetBool("move", shouldMove);
     _animator.SetFloat("velx", _velocity.x);
     _animator.SetFloat("vely", _velocity.y);
