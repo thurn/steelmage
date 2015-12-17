@@ -1,0 +1,84 @@
+----- Player Movement FSM -----
+
+Standing
+  IsJump = false
+  IsBlock1 = false
+  IsBlock2 = false
+  InputMagnitude = 0
+  IsMelee = false
+  IsHit1 = false
+  IsHit2 = false
+  IsGrenade = false
+  InputAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+
+SetWalkStartAngle
+  WalkStartAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+
+WalkingStart
+  IsStopLU = false
+  IsStopRU = false
+  InputAngle = 0
+  Horizontal = GetAxis(Horizontal)
+  Vertical = GetAxis(Vertical)
+  InputMagnitude = GetInputMagnitude()
+  InputMagnitude < 0.2 --> ChooseStopAnim
+
+WalkingWithTurning
+  IsStopLU = false
+  IsStopRU = false
+  Horizontal = GetAxis(Horizontal)
+  Vertical = GetAxis(Vertical)
+  InputMagnitude = GetInputMagnitude()
+  InputAngle = Damp(InputAngleDamp, GetAngleY(CharacterPositionCompass, InputDirectionCompass))
+  RawInputAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+  InputMagnitude < 0.01 ---> ChooseStopAnim
+
+WalkingWithNoTurning
+  IsStopLU = false
+  IsStopRU = false
+  Horizontal = GetAxis(Horizontal)
+  Vertical = GetAxis(Vertical)
+  InputMagnitude = GetInputMagnitude()
+  InputAngle = Damp(InputAngleDamp, GetAngleY(CharacterPositionCompass, InputDirectionCompass))
+  RawInputAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+  InputMagnitude < 0.01 ---> ChooseStopAnim
+
+ChooseStopAnim
+  IsRU = _animator.IsRU
+  IsRU <= 0.95 --> StopLU
+  IsRU > 0.95 --> StopRU
+
+StopLU
+  WalkStopAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+  InputAngle = Damp(0.15, GetAngleY(CharacterPositionCompass, InputDirectionCompass))
+  IsStopLU = true
+
+StopRU
+  WalkStopAngle = GetAngleY(CharacterPositionCompass, InputDirectionCompass)
+  InputAngle = Damp(0.15, GetAngleY(CharacterPositionCompass, InputDirectionCompass))
+  IsStopLU = true
+
+----- Player Controller -----
+
+Idle
+  -> Start Walking Blend Tree (InputMagnitude > 0.2)
+
+Start Walking Blend Tree [WalkStartAngle, InputMagnitude]
+  -> Walking Blend Tree (no conditions, exit time)
+  -> Walking Blend Tree (IsCrouch)
+  -> WalkFwdStop_LU (IsStopLU)
+  -> WalkFwdStop_RU (IsStopRU)
+
+Walking Blend Tree [InputAngle, InputMagnitude]
+  -> WalkFwdStop_LU (IsStopLU)
+  -> WalkFwdStop_LU (InputMagnitude < 0.1 && IsRU < 0.97)
+  -> WalkFwdStop_RU (IsStopRU)
+  -> WalkFwdStop_RU (InputMagnitude < 0.1 && IsRU > 0.97)
+
+WalkFwdStop_RU
+  -> Start Walking Blend Tree (InputMagnitude > 0.2)
+  -> Idle (no conditions, exit time)
+
+WalkFwdStop_LU
+  -> Start Walking Blend Tree (InputMagnitude > 0.2)
+  -> Idle (no conditions, exit time)
