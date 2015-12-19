@@ -23,15 +23,21 @@ namespace Steelmage {
     // Update is called once per frame
     private void Update() {
       if (Input.GetKeyDown(KeyCode.N)) {
+        var relativePosition = Target.position - transform.position;
+        Debug.Log(Target.position + " + " + transform.position + " = " + relativePosition);
+        var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
+        var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
+        _animator.SetFloat("WalkStartAngle", walkStartAngle);
         _animator.SetFloat("InputMagnitude", 0.5f);
-
       }
-      var relativePosition = Target.position - transform.position;
-      var targetRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
-      var deltaRotation = Quaternion.FromToRotation(transform.forward, relativePosition);
-      var walkStartAngle = NormalizeAngle(deltaRotation.eulerAngles.y);
-      Debug.Log("walkStartAngle " + walkStartAngle);
-      _animator.SetFloat("WalkStartAngle", walkStartAngle);
+
+      //var relativePosition = Target.position - transform.position;
+      //var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
+      //var targetAngle = Quaternion.Angle(transform.rotation, lookRotation);
+      //Debug.Log("transform rotation " + transform.rotation.eulerAngles.y + " look rotation " + 
+      //  lookRotation.eulerAngles.y + " target " + targetAngle);
+      //var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
+      //_animator.SetFloat("WalkStartAngle", walkStartAngle);
     }
 
     private static float NormalizeAngle(float angle) {
