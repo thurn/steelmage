@@ -24,10 +24,12 @@ namespace Steelmage {
     private void Update() {
       if (Input.GetKeyDown(KeyCode.N)) {
         var relativePosition = Target.position - transform.position;
-        Debug.Log(Target.position + " + " + transform.position + " = " + relativePosition);
         var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
         var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
-        _animator.SetFloat("WalkStartAngle", walkStartAngle);
+        var currentRotation = NormalizeAngle(transform.rotation.eulerAngles.y);
+        var targetRotation = NormalizeAngle(walkStartAngle - currentRotation);
+        Debug.Log("walkStartAngle " + walkStartAngle + " current rotation " + currentRotation + " ws-cur " + targetRotation);
+        _animator.SetFloat("WalkStartAngle", targetRotation);
         _animator.SetFloat("InputMagnitude", 0.5f);
       }
 
@@ -41,8 +43,9 @@ namespace Steelmage {
     }
 
     private static float NormalizeAngle(float angle) {
-      if (Mathf.Abs(angle) < 5) return 0;
+      if (Mathf.Abs(angle) < 2.5) return 0;
       if (Mathf.Abs(angle - 360) < Mathf.Abs(angle)) return angle - 360;
+      if (Mathf.Abs(angle + 360) < Mathf.Abs(angle)) return angle + 360;
       return angle;
     }
   }
