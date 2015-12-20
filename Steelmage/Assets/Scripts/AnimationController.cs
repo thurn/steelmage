@@ -14,6 +14,8 @@ namespace Steelmage {
     private AnimationState _animationState;
     private Animator _animator;
     public Transform Target;
+    public Transform Target2;
+    private int _inputAngleResetCounter;
 
     private void Start() {
       _animator = GetComponent<Animator>();
@@ -23,23 +25,33 @@ namespace Steelmage {
     // Update is called once per frame
     private void Update() {
       if (Input.GetKeyDown(KeyCode.N)) {
-        var relativePosition = Target.position - transform.position;
-        var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
-        var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
-        var currentRotation = NormalizeAngle(transform.rotation.eulerAngles.y);
-        var targetRotation = NormalizeAngle(walkStartAngle - currentRotation);
-        Debug.Log("walkStartAngle " + walkStartAngle + " current rotation " + currentRotation + " ws-cur " + targetRotation);
-        _animator.SetFloat("WalkStartAngle", targetRotation);
+
+        _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, Target));
         _animator.SetFloat("InputMagnitude", 0.5f);
       }
 
-      //var relativePosition = Target.position - transform.position;
-      //var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
-      //var targetAngle = Quaternion.Angle(transform.rotation, lookRotation);
-      //Debug.Log("transform rotation " + transform.rotation.eulerAngles.y + " look rotation " + 
-      //  lookRotation.eulerAngles.y + " target " + targetAngle);
-      //var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
-      //_animator.SetFloat("WalkStartAngle", walkStartAngle);
+      if (Input.GetKeyDown(KeyCode.M)) {
+        _animator.SetFloat("InputAngle", 50.0f);
+        _inputAngleResetCounter = 30;
+      }
+
+      if (_inputAngleResetCounter > 0) {
+        _inputAngleResetCounter--;
+      }
+
+      if (_inputAngleResetCounter == 1) {
+        _animator.SetFloat("InputAngle", 0.0f);
+      }
+
+      Debug.Log("target2 angle " + AngleToTarget(transform, Target2));
+    }
+
+    private static float AngleToTarget(Transform source, Transform target) {
+      var relativePosition = target.position - source.position;
+      var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
+      var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
+      var currentRotation = NormalizeAngle(source.rotation.eulerAngles.y);
+      return NormalizeAngle(walkStartAngle - currentRotation);      
     }
 
     private static float NormalizeAngle(float angle) {
