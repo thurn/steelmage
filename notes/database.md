@@ -1,0 +1,10 @@
+- prototype chains
+- multiple prototypes possible
+- serialization to JSON
+- support for "randomized" properties which give different children different values
+- lazy instantiation of randomized properties
+- leaf nodes always have distinct IDs
+- events on property changes
+- temporary properties, time-boxed
+- rules-engine-style code
+- "links" between objects, links can be annotated
