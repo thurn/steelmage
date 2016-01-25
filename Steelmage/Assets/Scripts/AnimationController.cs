@@ -43,7 +43,7 @@ namespace Steelmage {
         _animator.SetFloat("InputAngle", 0.0f);
       }
 
-      Debug.Log("target2 angle " + AngleToTarget(transform, Target2));
+      //Debug.Log("target2 angle " + AngleToTarget(transform, Target2));
     }
 
     private static float AngleToTarget(Transform source, Transform target) {
