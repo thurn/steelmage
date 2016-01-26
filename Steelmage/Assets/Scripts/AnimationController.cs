@@ -16,6 +16,7 @@ namespace Steelmage {
     public Transform Target;
     public Transform Target2;
     private int _inputAngleResetCounter;
+    private bool _target2;
 
     private void Start() {
       _animator = GetComponent<Animator>();
@@ -25,25 +26,17 @@ namespace Steelmage {
     // Update is called once per frame
     private void Update() {
       if (Input.GetKeyDown(KeyCode.N)) {
-
         _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, Target));
         _animator.SetFloat("InputMagnitude", 0.5f);
       }
 
       if (Input.GetKeyDown(KeyCode.M)) {
-        _animator.SetFloat("InputAngle", 50.0f);
-        _inputAngleResetCounter = 30;
+        _target2 = true;
       }
 
-      if (_inputAngleResetCounter > 0) {
-        _inputAngleResetCounter--;
+      if (_target2 && Vector3.Distance(transform.position, Target2.position) > 5.0f) {
+        _animator.SetFloat("InputAngle", AngleToTarget(transform, Target2));
       }
-
-      if (_inputAngleResetCounter == 1) {
-        _animator.SetFloat("InputAngle", 0.0f);
-      }
-
-      //Debug.Log("target2 angle " + AngleToTarget(transform, Target2));
     }
 
     private static float AngleToTarget(Transform source, Transform target) {
