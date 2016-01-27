@@ -37,6 +37,7 @@ namespace Steelmage {
       if (Input.GetKeyDown(KeyCode.M)) {
         //_target2 = true;
         _navigate = true;
+        _navMeshAgent.nextPosition = transform.position;
         _navMeshAgent.SetDestination(Target2.position);
       }
 
@@ -45,7 +46,11 @@ namespace Steelmage {
       //}
 
       if (_navigate) {
-        Debug.Log(_navMeshAgent.nextPosition + "<<>>" + AngleToTarget(transform, _navMeshAgent.nextPosition));
+        // TODO: spawn cubes at _navMeshAgent.nextPosition
+        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphere.transform.position = _navMeshAgent.nextPosition;
+        sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
         _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
       }
     }
