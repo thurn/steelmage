@@ -1,24 +1,20 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Steelmage {
   public enum AnimationState {
     Standing,
     StartingWalking,
-    WalkingWithTurning,
-    WalkingWithoutTurning,
-    StoppingLeftFootUp,
-    StoppingRightFootUp
+    Walking
   }
 
   public class AnimationController : MonoBehaviour {
     private AnimationState _animationState;
     private Animator _animator;
-    public Transform Target;
-    public Transform Target2;
     private int _inputAngleResetCounter;
-    private bool _target2;
     private NavMeshAgent _navMeshAgent;
-    private bool _navigate;
+    private Transform _target;
+    private bool _target2;
+    public Transform Target2;
 
     private void Start() {
       _animator = GetComponent<Animator>();
@@ -29,29 +25,36 @@ namespace Steelmage {
 
     // Update is called once per frame
     private void Update() {
-      if (Input.GetKeyDown(KeyCode.N)) {
-        _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, Target.position));
-        _animator.SetFloat("InputMagnitude", 0.5f);
+      switch (_animationState) {
+        case AnimationState.Walking:
+          if (Vector3.Distance(transform.position, _target.position) < 2.0f) {
+            _animator.SetFloat("InputMagnitude", 0.0f);
+            _animator.SetFloat("InputAngle", 0.0f);
+            _animationState = AnimationState.Standing;
+          }
+          else {
+            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.position = _navMeshAgent.nextPosition;
+            sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+          }
+          break;
+        case AnimationState.StartingWalking:
+          _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+          _animator.SetFloat("InputMagnitude", 0.5f);
+          _inputAngleResetCounter++;
+          if (_inputAngleResetCounter == 10) {
+            _animationState = AnimationState.Walking;
+            _inputAngleResetCounter = 0;
+          }
+          break;
       }
 
       if (Input.GetKeyDown(KeyCode.M)) {
-        //_target2 = true;
-        _navigate = true;
         _navMeshAgent.nextPosition = transform.position;
         _navMeshAgent.SetDestination(Target2.position);
-      }
-
-      //if (_target2 && Vector3.Distance(transform.position, Target2.position) > 5.0f) {
-        //_animator.SetFloat("InputAngle", AngleToTarget(transform, Target2.position));
-      //}
-
-      if (_navigate) {
-        // TODO: spawn cubes at _navMeshAgent.nextPosition
-        var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.position = _navMeshAgent.nextPosition;
-        sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-
-        _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+        _target = Target2;
+        _animationState = AnimationState.StartingWalking;
       }
     }
 
@@ -60,7 +63,7 @@ namespace Steelmage {
       var lookRotation = Quaternion.LookRotation(relativePosition, Vector3.up);
       var walkStartAngle = NormalizeAngle(lookRotation.eulerAngles.y);
       var currentRotation = NormalizeAngle(source.rotation.eulerAngles.y);
-      return NormalizeAngle(walkStartAngle - currentRotation);      
+      return NormalizeAngle(walkStartAngle - currentRotation);
     }
 
     private static float NormalizeAngle(float angle) {
