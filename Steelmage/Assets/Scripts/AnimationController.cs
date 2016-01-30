@@ -1,61 +1,70 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Steelmage {
   public enum AnimationState {
     Standing,
     StartingWalking,
+    StoppingWalking,
     Walking
   }
 
   public class AnimationController : MonoBehaviour {
     private AnimationState _animationState;
     private Animator _animator;
-    private int _inputAngleResetCounter;
     private NavMeshAgent _navMeshAgent;
-    private Transform _target;
-    private bool _target2;
-    public Transform Target2;
+    private int _startWalkingCounter;
+    private Vector3 _target;
+    private bool _first = true;
 
-    private void Start() {
+    public void Start() {
       _animator = GetComponent<Animator>();
       _animationState = AnimationState.Standing;
       _navMeshAgent = GetComponent<NavMeshAgent>();
       _navMeshAgent.updatePosition = false;
     }
 
-    // Update is called once per frame
-    private void Update() {
+    public void Update() {
       switch (_animationState) {
         case AnimationState.Walking:
-          if (Vector3.Distance(transform.position, _target.position) < 2.0f) {
-            _animator.SetFloat("InputMagnitude", 0.0f);
-            _animator.SetFloat("InputAngle", 0.0f);
-            _animationState = AnimationState.Standing;
-          }
-          else {
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.position = _navMeshAgent.nextPosition;
-            sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+          _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+            _animator.SetFloat("InputMagnitude", 0.5f);
+          if (Vector3.Distance(transform.position, _target) < 1.5f) {
+            _animationState = AnimationState.StoppingWalking;
           }
           break;
         case AnimationState.StartingWalking:
-          _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
-          _animator.SetFloat("InputMagnitude", 0.5f);
-          _inputAngleResetCounter++;
-          if (_inputAngleResetCounter == 10) {
+          if (_startWalkingCounter == 1) {
+            _animator.SetFloat("InputMagnitude", 0.25f);
+            _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+            // This is frequently way off
+            Debug.Log("Walk Start Angle " + _animator.GetFloat("WalkStartAngle"));
+          }
+          _first = false;
+          _startWalkingCounter++;
+          if (_startWalkingCounter == 5) {
+            // Stay in the StartWalking state for X frames to prevent jerky motion
             _animationState = AnimationState.Walking;
-            _inputAngleResetCounter = 0;
+            _startWalkingCounter = 0;
           }
           break;
+        case AnimationState.StoppingWalking:
+          _animator.SetFloat("InputAngle", 0.0f);
+            _animator.SetFloat("InputMagnitude", 0.25f);
+          if (Vector3.Distance(transform.position, _target) < 1.0f) {
+            _animationState = AnimationState.Standing;
+          }
+          break;
+        case AnimationState.Standing:
+          _animator.SetFloat("InputMagnitude", 0.0f);
+          break;
       }
+    }
 
-      if (Input.GetKeyDown(KeyCode.M)) {
-        _navMeshAgent.nextPosition = transform.position;
-        _navMeshAgent.SetDestination(Target2.position);
-        _target = Target2;
-        _animationState = AnimationState.StartingWalking;
-      }
+    public void WalkToTarget(Vector3 target) {
+      _navMeshAgent.nextPosition = transform.position;
+      _navMeshAgent.SetDestination(target);
+      _target = target;
+      _animationState = AnimationState.StartingWalking;
     }
 
     private static float AngleToTarget(Transform source, Vector3 targetPosition) {
