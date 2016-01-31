@@ -14,42 +14,42 @@ namespace Steelmage {
     private NavMeshAgent _navMeshAgent;
     private int _startWalkingCounter;
     private Vector3 _target;
-    private bool _first = true;
 
     public void Start() {
       _animator = GetComponent<Animator>();
       _animationState = AnimationState.Standing;
       _navMeshAgent = GetComponent<NavMeshAgent>();
       _navMeshAgent.updatePosition = false;
+      _navMeshAgent.updateRotation = false;
     }
 
     public void Update() {
       switch (_animationState) {
         case AnimationState.Walking:
-          _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
-            _animator.SetFloat("InputMagnitude", 0.5f);
-          if (Vector3.Distance(transform.position, _target) < 1.5f) {
+          if (Vector3.Distance(transform.position, _target) < 2.5f) {
+            // Navigation starts freaking out once you're within |radius| of the target
+            Debug.Log("STOPPING");
             _animationState = AnimationState.StoppingWalking;
+          }
+          else {
+            _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
+            Debug.Log("Angle " + _animator.GetFloat("InputAngle"));
+            // this is way off at the beginning
+            _animator.SetFloat("InputMagnitude", 0.7f);            
           }
           break;
         case AnimationState.StartingWalking:
-          if (_startWalkingCounter == 1) {
-            _animator.SetFloat("InputMagnitude", 0.25f);
-            _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
-            // This is frequently way off
-            Debug.Log("Walk Start Angle " + _animator.GetFloat("WalkStartAngle"));
-          }
-          _first = false;
-          _startWalkingCounter++;
-          if (_startWalkingCounter == 5) {
-            // Stay in the StartWalking state for X frames to prevent jerky motion
+          if (!_navMeshAgent.pathPending) {
+            NavMeshHit hit;
+            _navMeshAgent.SamplePathPosition(NavMesh.AllAreas, 1.0f, out hit);
+            _animator.SetFloat("WalkStartAngle", AngleToTarget(transform, hit.position));
+            _animator.SetFloat("InputMagnitude", 0.5f);   
             _animationState = AnimationState.Walking;
-            _startWalkingCounter = 0;
           }
           break;
         case AnimationState.StoppingWalking:
           _animator.SetFloat("InputAngle", 0.0f);
-            _animator.SetFloat("InputMagnitude", 0.25f);
+          _animator.SetFloat("InputMagnitude", 0.5f);
           if (Vector3.Distance(transform.position, _target) < 1.0f) {
             _animationState = AnimationState.Standing;
           }
