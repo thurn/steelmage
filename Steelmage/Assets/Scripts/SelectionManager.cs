@@ -3,16 +3,17 @@ using Vectrosity;
 
 public class SelectionManager : MonoBehaviour {
   public GGObject SelectedGridObject;
+  private VectorLine _line;
 
-  private void Start() {
-    var linePoints = new Vector3[60];
-    var line = new VectorLine("selected", linePoints, null, 2.0f, LineType.Continuous) {
+  private void Update() {
+    // TODO: Investigate hierarchy flicker
+    VectorLine.Destroy(ref _line);
+    var linePoints = new Vector3[8];
+    _line = new VectorLine("selected", linePoints, null, 4.0f, LineType.Continuous) {
       color = Color.green
     };
-    line.MakeCircle(SelectedGridObject.CachedTransform.position, Vector3.up, 1.0f);
-    line.Draw3DAuto();
+    _line.MakeCircle(SelectedGridObject.CachedTransform.position, Vector3.up, 1.0f);
+    _line.Draw3DAuto();
   }
 
-  // Update is called once per frame
-  private void Update() {}
 }
