@@ -12,7 +12,6 @@ namespace Steelmage {
     private AnimationState _animationState;
     private Animator _animator;
     private NavMeshAgent _navMeshAgent;
-    private int _startWalkingCounter;
     private Vector3 _target;
 
     public void Start() {
@@ -27,15 +26,11 @@ namespace Steelmage {
       switch (_animationState) {
         case AnimationState.Walking:
           if (Vector3.Distance(transform.position, _target) < 2.5f) {
-            // Navigation starts freaking out once you're within |radius| of the target
-            Debug.Log("STOPPING");
             _animationState = AnimationState.StoppingWalking;
           }
           else {
             _animator.SetFloat("InputAngle", AngleToTarget(transform, _navMeshAgent.nextPosition));
-            Debug.Log("Angle " + _animator.GetFloat("InputAngle"));
-            // this is way off at the beginning
-            _animator.SetFloat("InputMagnitude", 0.7f);            
+            _animator.SetFloat("InputMagnitude", 0.5f);            
           }
           break;
         case AnimationState.StartingWalking:
