@@ -1,0 +1,26 @@
+Card Types
+
+- Action
+- Spell
+  * Attack
+  * Immediate
+  * Temporary
+  * Ongoing
+- Equipment
+  * Body
+  * Arm
+  * Face
+  * Feet
+  * Head
+  * Shoulders
+  * Hands
+  * Finger
+  * Waist
+  * Misc
+- Unit
+  * Bot
+  * Turing
+  * Biot
+  * Virt
+  * Beast
+  * Swarm
